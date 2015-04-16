@@ -21,11 +21,11 @@ void display_name()
 	if(gethostname(host_name, BUFSIZ)== -1) //displays the host name
 		perror("gethostname");
 
-	char directory_name[BUFSIZ];
+	/*char directory_name[BUFSIZ];
 	if(getcwd(directory_name, BUFSIZ) == NULL) //displays the directory
-		perror("getcwd");
+		perror("getcwd");*/
 
-	cout << log  << "@" << host_name  << ":" << directory_name << "$ ";
+	cout << log  << "@" << host_name  << ":" /*<< directory_name*/ << "$ ";
 	
 }
 
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 		}
 		char* womp = (char*)user_input.c_str();
 		char* token;
-		token = strtok(womp, " 	");
+		token = strtok(womp, " \t\n");
 		while(token != NULL)
 		{
 			char** lol;
