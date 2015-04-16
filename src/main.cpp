@@ -67,9 +67,9 @@ void tokenizer(string& conditional, char**& lol, char*& the_token)
 		count++;
 		the_token = strtok(NULL, " ");
 	}
-	if(count == 1)
+	if(!token_flag)
 	{
-		new_lol[1] = NULL;
+		new_lol[count] = NULL;
 	}
 	lol = new_lol;
 	//return lol;
@@ -87,33 +87,32 @@ bool run_execvp(char** arg)
 	}
 	else if(pid == 0)
 	{
-		char** argv = arg;
-		if(contain_exit(argv));
-		else
-		{
-			if(-1 != execvp(argv[0], argv))
+			if(-1 != execvp(arg[0], arg))
 				return true;
 			else
 			{
 				perror("execvp");
-				return false;
+				exit(1);
 			}
 			
-		}
-		//cout << "This is the child"<< endl;
-		//return 0;
 	}
 	else if(pid > 0)
 	{
 		if(wait(0) == -1)
 			perror("There was an error waiting"); //somehow an error during waiting
+		//char** argv = arg;
+		string init = arg[0];
+		if(contain_exit(arg));
+		else if(init == "true") return true;
+		else if(init == "false") return false;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 int main(int argc, char* argv[])
 {
-	while(1)		//whenever there is a system call remember to have perror
+	while(cin.good())		//whenever there is a system call remember to have perror
 	{
 		display_name();
 		string user_input;
@@ -171,23 +170,32 @@ int main(int argc, char* argv[])
 		{
 			char** lol;
 			string condition;
-			// bool func only returns false at the bottom
-			//run_execvp(lol);
-			//cout << condition << endl;
-
+			bool prev_or = false;
+			bool prev_and = true;
 			while(token != NULL)
 			{
-				
 				tokenizer(condition, lol, token);
-				if(*lol != NULL)
+				if(*lol != NULL && !prev_or && prev_and)
 					if(contain_exit(lol)) exit(1);
 				if(condition == or_c)
 				{
-					if(run_execvp(lol) == true)
+					if(prev_or)
+					{
+						/*tokenizer(condition,lol,token);
+						if(*lol != NULL)
+							if(contain_exit(lol)) exit(1);*/
+					}
+					else if(!prev_and)
+					{
+						prev_and = true;
+						prev_or = false;
+					}
+					else if(run_execvp(lol) == true)
 					{
 						if(token != NULL)
 						{
-							tokenizer(condition,lol,token);
+							//tokenizer(condition,lol,token);
+							prev_or = true;
 						}
 						else
 						{}
@@ -195,25 +203,43 @@ int main(int argc, char* argv[])
 				}
 				else if(condition == and_c)
 				{
-					if(run_execvp(lol) == false)
+					if(!prev_and)
+					{
+						/*tokenizer(condition,lol,token);
+						if(*lol != NULL)
+							if(contain_exit(lol)) exit(1);*/
+					}
+					else if(prev_or)
+					{
+						//if(run_execvp(lol));
+						/*
+						if(*lol != NULL)
+							if(contain_exit(lol)) exit(1);*/
+						prev_or = false;
+					}
+					else if(run_execvp(lol) == false)
 					{
 						if(token != NULL)
 						{
-							tokenizer(condition,lol,token);
+							//tokenizer(condition,lol,token);
+							prev_and = false;
 						}
 						else
 						{}
 					}
 
 				}
-				else if(condition == semi_c)
+				else if(condition == semi_c && !prev_or)
 				{
 					if(run_execvp(lol));
+					prev_or = false;
+					prev_and = true;
 				}
 				else
 				{
 					if(run_execvp(lol));
 				}
+
 
 			}
 			
