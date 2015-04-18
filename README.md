@@ -28,7 +28,7 @@ $bin/rshell
 ## Bugs / Limitations
 
 ```
-Anything under quotes will not work.
+Echo with quotes will not work as expected.
 echo can output standard in; however, cannot write to a file with quotations.
 
 ```
