@@ -10,6 +10,7 @@ The connector `;` will run any command if the command is true.
 
 Running the command `true` will return true. Running the command false will return false.
 
+**EDGE CASES:**
 Having an empty command returns false. There is no error output.
 
 Comments are marked as `#`. Anything after the comment will not be ran.
@@ -34,4 +35,4 @@ echo can output standard in; however, cannot write to a file with quotations.
 
 ## Licensing
 
-Licensing can be found * [here](/LICENSE)
+Licensing can be found [here](/LICENSE)
