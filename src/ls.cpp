@@ -1,4 +1,7 @@
 #include <iostream>
+#include <pwd.h>
+#include <grp.h>
+#include <iomanip>
 #include <algorithm>
 #include <stdio.h>
 #include <cstring>
@@ -211,11 +214,32 @@ void run_a(bool show_p, const char* directory)
 	
 }
 
+void output_l(const struct stat s)
+{
+	if(S_ISLNK(s.st_mode)) cout << "s";
+	else if(S_ISDIR(s.st_mode)) cout << "d";
+	else cout << "-";
+	cout << ((S_IRUSR & s.st_mode) ? "r" : "-");
+	cout << ((S_IWUSR & s.st_mode) ? "w" : "-");
+	cout << ((S_IXUSR & s.st_mode) ? "x" : "-");
+	cout << ((S_IRGRP & s.st_mode) ? "r" : "-");
+	cout << ((S_IWGRP & s.st_mode) ? "w" : "-");
+	cout << ((S_IXGRP & s.st_mode) ? "x" : "-");
+	cout << ((S_IROTH & s.st_mode) ? "r" : "-");
+	cout << ((S_IWOTH & s.st_mode) ? "w" : "-");
+	cout << ((S_IXOTH & s.st_mode) ? "x" : "-");
+}
+
 void run_l(bool show_p, const char* directory)
 {
 	vector<char*> hello = files_inside(directory);
 	size_t u;
 	struct stat s;
+	struct passwd* local;
+	struct group* group;
+	char* owner_name;
+	char* group_name;
+	string mod;
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
@@ -229,13 +253,38 @@ void run_l(bool show_p, const char* directory)
 			perror("stat");
 			exit(1);
 		}
-		if(S_ISDIR(s.st_mode))
+		local = getpwuid(s.st_uid);
+		if(local == NULL)
 		{
-			if(!show_p && checker);
-			else
-				cout << blue << basename(the_path) << white << "  ";
+			perror("getpwuid");
+			exit(1);
 		}
+		group = getgrgid(s.st_gid);
+		if(group == NULL)
+		{
+			perror("getgrgid");
+			exit(1);
+		}
+		owner_name = local->pw_name;
+		group_name = group->gr_name;
+		mod = ctime(&s.st_mtime);
+		mod = mod.substr(4,12);
+		if(!show_p && checker);
+		else
+		{
+			output_l(s);
+			cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(5) << right << s.st_size << " " << mod << " ";
+			if(S_ISDIR(s.st_mode))
+				cout << blue << basename(the_path) << white << "  ";
+			else if(S_IXUSR & s.st_mode)
+				cout << green << basename(the_path) << white << "  ";
+			else
+				cout << white << basename(the_path) << "  ";
+			cout << endl;
+		}
+		delete[] the_path;
 	}
+	cout << "\n";
 }
 
 int main(int argc, char* argv[])
@@ -267,7 +316,8 @@ int main(int argc, char* argv[])
 		else if(flags_bin == 5)// run ls -l
 			run_l(false, file_path);
 		else if(flags_bin == 10);// run ls -R
-		else if(flags_bin == 6); // run ls -al or -la
+		else if(flags_bin == 6) // run ls -al or -la
+			run_l(true, file_path);
 		else if(flags_bin == 11);// run ls -aR or -Ra
 		else if(flags_bin == 15);// run ls -lR or -Rl
 		else if(flags_bin == 16);// run ls -alR or -lRa or -aRl or -laR or -Ral
