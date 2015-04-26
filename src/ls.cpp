@@ -13,6 +13,9 @@
 
 using namespace std;
 
+char blue[] = {"\033[1;34m"};
+char white[] = {"\033[0;00m"};
+char green[] = {"\033[1;32m"};
 enum what_flags{nothing, flag_a, flag_l, flag_R} flag_check;
 
 char** give_path(int pos_parameter, size_t argc, char** argv)
@@ -158,15 +161,81 @@ vector<char* > files_inside(const char* directory)
 	}
 	if(my_files.size() != 0)
 		sort(my_files.begin(), my_files.end(),case_insensitive);
+	if(closedir(my_directory) == -1)
+	{
+		perror("close directory");
+		exit(1);
+	}
 	return my_files;
+}
+bool check_if_dot(const char* file)
+{
+	if(file[0] == '.')
+		return true;
+	return false;
 }
 
 void run_a(bool show_p, const char* directory)
 {
 	vector<char*> hello = files_inside(directory);
 	size_t u;
+	struct stat s;
+	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
-		cout << hello.at(u) << endl;
+	{
+		char* the_path = (char*)malloc(BUFSIZ);
+		bool checker = check_if_dot(hello.at(u));
+		strcpy(the_path, directory);
+		strcat(the_path, "/");
+		strcat(the_path, hello.at(u));
+		if(stat(the_path, &s) == -1)
+		{
+			perror("stat");
+			exit(1);
+		}
+		if(S_ISDIR(s.st_mode))
+		{
+			if(!show_p && checker);
+			else
+				cout << blue << basename(the_path) << white << "  ";
+		}
+		else if(S_IXUSR & s.st_mode)
+		{
+			cout << green << basename(the_path) << white << "  ";
+		}
+		else
+			cout << white << basename(the_path) << "  ";
+		delete[] the_path;
+	}
+	cout << "\n\n";
+	
+}
+
+void run_l(bool show_p, const char* directory)
+{
+	vector<char*> hello = files_inside(directory);
+	size_t u;
+	struct stat s;
+	cout << directory << ":" << endl;
+	for(u = 0; u < hello.size(); u++)
+	{
+		char* the_path = (char*)malloc(BUFSIZ);
+		bool checker = check_if_dot(hello.at(u));
+		strcpy(the_path, directory);
+		strcat(the_path, "/");
+		strcat(the_path, hello.at(u));
+		if(stat(the_path, &s) == -1)
+		{
+			perror("stat");
+			exit(1);
+		}
+		if(S_ISDIR(s.st_mode))
+		{
+			if(!show_p && checker);
+			else
+				cout << blue << basename(the_path) << white << "  ";
+		}
+	}
 }
 
 int main(int argc, char* argv[])
@@ -189,10 +258,14 @@ int main(int argc, char* argv[])
 		{
 			file_path = ".";
 		}
+		else
+			file_path = womp[stop];
 		if(flags_bin == 0)//run ls
 			run_a(false, file_path);
-		else if(flags_bin == 1);// run ls -a
-		else if(flags_bin == 5);// run ls -l
+		else if(flags_bin == 1)// run ls -a
+			run_a(true, file_path);
+		else if(flags_bin == 5)// run ls -l
+			run_l(false, file_path);
 		else if(flags_bin == 10);// run ls -R
 		else if(flags_bin == 6); // run ls -al or -la
 		else if(flags_bin == 11);// run ls -aR or -Ra
