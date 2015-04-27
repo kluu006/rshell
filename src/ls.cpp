@@ -178,6 +178,13 @@ bool check_if_dot(const char* file)
 	return false;
 }
 
+bool dont_do(const char* file)
+{
+	string wut = file;
+	if(wut == "." || wut == "..")
+		return true;
+	return false;
+}
 void run_a(bool show_p, const char* directory)
 {
 	vector<char*> hello = files_inside(directory);
@@ -207,7 +214,9 @@ void run_a(bool show_p, const char* directory)
 			cout << green << basename(the_path) << white << "  ";
 		}
 		else
-			cout << white << basename(the_path) << "  ";
+			if(!show_p && checker);
+			else
+				cout << white << basename(the_path) << "  ";
 		delete[] the_path;
 	}
 	cout << "\n\n";
@@ -287,13 +296,90 @@ void run_l(bool show_p, const char* directory)
 	cout << "\n";
 }
 
+void run_R(bool show_p, const char* directory, bool show_l)
+{
+	vector<char*> recur_dir;
+	vector<char*> hello = files_inside(directory);
+	size_t u;
+	struct stat s;
+	struct passwd* local;
+	struct group* group;
+	char* owner_name;
+	char* group_name;
+	string mod;
+	cout << directory << ":" << endl;
+	for(u = 0; u < hello.size(); u++)
+	{
+		char* the_path = (char*)malloc(BUFSIZ);
+		bool checker = check_if_dot(hello.at(u));
+		bool dont = dont_do(hello.at(u));
+		strcpy(the_path, directory);
+		strcat(the_path, "/");
+		strcat(the_path, hello.at(u));
+		if(stat(the_path, &s) == -1)
+		{
+			perror("stat");
+			exit(1);
+		}
+		local = getpwuid(s.st_uid);
+		if(local == NULL)
+		{
+			perror("getpwuid");
+			exit(1);
+		}
+		group = getgrgid(s.st_gid);
+		if(group == NULL)
+		{
+			perror("getgrgid");
+			exit(1);
+		}
+		owner_name = local->pw_name;
+		group_name = group->gr_name;
+		mod = ctime(&s.st_mtime);
+		mod = mod.substr(4,12);
+		if(!show_p && checker);
+		else
+		{
+			if(show_l)
+			{
+				output_l(s);
+				cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(5) << right << s.st_size << " " << mod << " ";
+			}
+			if(S_ISDIR(s.st_mode))
+			{
+				if(dont);
+				else
+				{
+					char* new_path = (char*)malloc(strlen(the_path)+1);
+					strcpy(new_path, the_path);
+					recur_dir.push_back(new_path);
+				}
+				cout << blue << basename(the_path) << white << "  ";
+			}
+			else if(S_IXUSR & s.st_mode)
+				cout << green << basename(the_path) << white << "  ";
+			else
+				cout << white << basename(the_path) << "  ";
+			if(show_l)
+				cout << endl;
+		}
+	}
+	cout << "\n\n";
+	size_t q;
+	for(q = 0; q < recur_dir.size(); q++)
+	{
+		run_R(show_p, recur_dir.at(q),show_l);
+		delete[] recur_dir.at(q);
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	int parameter = 1; //start at first flag
 	int flags_bin;
 	flags_bin = binary_flag(parameter, argc, argv);	//gives what combo to do
-	cout << flags_bin << endl << parameter << endl;
-	cout << argc << endl;
+	//cout << flags_bin << endl << parameter << endl;
+	//cout << argc << endl;
 	char** womp;
 	womp = give_path(parameter, argc, argv);
 	//for(int i = 0; *womp !=NULL && parameter < argc && i < 3; i++)
@@ -304,9 +390,7 @@ int main(int argc, char* argv[])
 	do
 	{
 		if(womp[0] == NULL)
-		{
 			file_path = ".";
-		}
 		else
 			file_path = womp[stop];
 		if(flags_bin == 0)//run ls
@@ -315,30 +399,18 @@ int main(int argc, char* argv[])
 			run_a(true, file_path);
 		else if(flags_bin == 5)// run ls -l
 			run_l(false, file_path);
-		else if(flags_bin == 10);// run ls -R
+		else if(flags_bin == 10)// run ls -R
+			run_R(false, file_path, false);
 		else if(flags_bin == 6) // run ls -al or -la
 			run_l(true, file_path);
-		else if(flags_bin == 11);// run ls -aR or -Ra
-		else if(flags_bin == 15);// run ls -lR or -Rl
-		else if(flags_bin == 16);// run ls -alR or -lRa or -aRl or -laR or -Ral
-
-
+		else if(flags_bin == 11)// run ls -aR or -Ra
+			run_R(true, file_path, false);
+		else if(flags_bin == 15)// run ls -lR or -Rl
+			run_R(false, file_path, true);
+		else if(flags_bin == 16)// run ls -alR or -lRa or -aRl or -laR or -Ral
+			run_R(true, file_path, true);
 		stop++;
 	}while(number_files > stop);
 	delete womp;
 	return 0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
