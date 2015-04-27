@@ -217,7 +217,7 @@ void run_a(bool show_p, const char* directory)
 			if(!show_p && checker);
 			else
 				cout << white << basename(the_path) << "  ";
-		delete[] the_path;
+		free(the_path);
 	}
 	cout << "\n\n";
 	
@@ -252,12 +252,13 @@ void run_l(bool show_p, const char* directory)
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
-		char* the_path = (char*)malloc(BUFSIZ);
+		//char* the_path = (char*)malloc(BUFSIZ);
 		bool checker = check_if_dot(hello.at(u));
-		strcpy(the_path, directory);
-		strcat(the_path, "/");
-		strcat(the_path, hello.at(u));
-		if(stat(the_path, &s) == -1)
+		//strcpy(the_path, directory);
+		//strcat(the_path, "/");
+		//strcat(the_path, hello.at(u));
+		string the_path = (string)directory + '/' + (string)hello.at(u);
+		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
 			exit(1);
@@ -284,14 +285,14 @@ void run_l(bool show_p, const char* directory)
 			output_l(s);
 			cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(5) << right << s.st_size << " " << mod << " ";
 			if(S_ISDIR(s.st_mode))
-				cout << blue << basename(the_path) << white << "  ";
+				cout << blue << basename(the_path.c_str()) << white << "  ";
 			else if(S_IXUSR & s.st_mode)
-				cout << green << basename(the_path) << white << "  ";
+				cout << green << basename(the_path.c_str()) << white << "  ";
 			else
-				cout << white << basename(the_path) << "  ";
+				cout << white << basename(the_path.c_str()) << "  ";
 			cout << endl;
 		}
-		delete[] the_path;
+		//free(the_path);
 	}
 	cout << "\n";
 }
@@ -363,13 +364,14 @@ void run_R(bool show_p, const char* directory, bool show_l)
 			if(show_l)
 				cout << endl;
 		}
+		free(the_path);
 	}
 	cout << "\n\n";
 	size_t q;
 	for(q = 0; q < recur_dir.size(); q++)
 	{
 		run_R(show_p, recur_dir.at(q),show_l);
-		delete[] recur_dir.at(q);
+		free(recur_dir.at(q));
 	}
 }
 
@@ -411,6 +413,6 @@ int main(int argc, char* argv[])
 			run_R(true, file_path, true);
 		stop++;
 	}while(number_files > stop);
-	delete womp;
+	free(womp);
 	return 0;
 }
