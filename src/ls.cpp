@@ -117,7 +117,7 @@ int binary_flag(int& param, size_t num_param, char** user_input)
 	return flags;
 }
 
-bool case_insensitive(const char* left, const char* right)
+bool case_insensitive(const string left, const string right)
 {
 	string leftside = left;
 	string rightside = right;
@@ -138,9 +138,9 @@ bool case_insensitive(const char* left, const char* right)
 		return true;
 	return true;
 }
-vector<char* > files_inside(const char* directory)
+vector<string > files_inside(const char* directory)
 {
-	vector<char* > my_files;
+	vector<string> my_files;
 	DIR *my_directory = opendir(directory);
 	dirent *this_dir;
 	if(my_directory != NULL)
@@ -152,8 +152,7 @@ vector<char* > files_inside(const char* directory)
 				perror("read directory");
 				exit(1);
 			}
-			char* bar = (char*)malloc(strlen(this_dir -> d_name) +1);
-			bar = this_dir->d_name;
+			string bar = this_dir -> d_name;
 			my_files.push_back(bar);
 		}
 	}
@@ -178,27 +177,40 @@ bool check_if_dot(const char* file)
 	return false;
 }
 
-bool dont_do(const char* file)
+bool dont_do(string file)
 {
 	string wut = file;
 	if(wut == "." || wut == "..")
 		return true;
 	return false;
 }
+int set_width(const vector<string> my_files)
+{
+	size_t s;
+	size_t width = 0;
+	for(s = 0; s < my_files.size(); s++)
+	{
+		if(my_files.at(s).size() > width)
+			width = my_files.at(s).size();
+	}
+	return width;
+}
 void run_a(bool show_p, const char* directory)
 {
-	vector<char*> hello = files_inside(directory);
+	vector<string> hello = files_inside(directory);
 	size_t u;
 	struct stat s;
+	//int width = set_width(hello);
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
-		char* the_path = (char*)malloc(BUFSIZ);
-		bool checker = check_if_dot(hello.at(u));
-		strcpy(the_path, directory);
-		strcat(the_path, "/");
-		strcat(the_path, hello.at(u));
-		if(stat(the_path, &s) == -1)
+		//char* the_path = (char*)malloc(BUFSIZ);
+		bool checker = check_if_dot(hello.at(u).c_str());
+		string the_path = (string)directory + '/' + hello.at(u);
+		//strcpy(the_path, directory);
+		//strcat(the_path, "/");
+		//strcat(the_path, hello.at(u));
+		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
 			exit(1);
@@ -207,19 +219,18 @@ void run_a(bool show_p, const char* directory)
 		{
 			if(!show_p && checker);
 			else
-				cout << blue << basename(the_path) << white << "  ";
+				cout << blue << basename(the_path.c_str()) << white << "  ";
 		}
 		else if(S_IXUSR & s.st_mode)
 		{
-			cout << green << basename(the_path) << white << "  ";
+			cout << green << basename(the_path.c_str()) << white << "  ";
 		}
 		else
 			if(!show_p && checker);
 			else
-				cout << white << basename(the_path) << "  ";
-		delete[] the_path;
+				cout << white << basename(the_path.c_str()) << "  ";
 	}
-	cout << "\n\n";
+	cout << "\n";
 	
 }
 
@@ -241,7 +252,7 @@ void output_l(const struct stat s)
 
 void run_l(bool show_p, const char* directory)
 {
-	vector<char*> hello = files_inside(directory);
+	vector<string> hello = files_inside(directory);
 	size_t u;
 	struct stat s;
 	struct passwd* local;
@@ -252,12 +263,13 @@ void run_l(bool show_p, const char* directory)
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
-		char* the_path = (char*)malloc(BUFSIZ);
-		bool checker = check_if_dot(hello.at(u));
-		strcpy(the_path, directory);
-		strcat(the_path, "/");
-		strcat(the_path, hello.at(u));
-		if(stat(the_path, &s) == -1)
+		//char* the_path = (char*)malloc(BUFSIZ);
+		bool checker = check_if_dot(hello.at(u).c_str());
+		string the_path = (string)directory + '/' + hello.at(u);
+		//strcpy(the_path, directory);
+		//strcat(the_path, "/");
+		//strcat(the_path, hello.at(u));
+		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
 			exit(1);
@@ -282,24 +294,22 @@ void run_l(bool show_p, const char* directory)
 		else
 		{
 			output_l(s);
-			cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(5) << right << s.st_size << " " << mod << " ";
+			cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(6) << right << s.st_size << " " << mod << " ";
 			if(S_ISDIR(s.st_mode))
-				cout << blue << basename(the_path) << white << "  ";
+				cout << blue << basename(the_path.c_str()) << white << "  ";
 			else if(S_IXUSR & s.st_mode)
-				cout << green << basename(the_path) << white << "  ";
+				cout << green << basename(the_path.c_str()) << white << "  ";
 			else
-				cout << white << basename(the_path) << "  ";
+				cout << white << basename(the_path.c_str()) << "  ";
 			cout << endl;
 		}
-		delete[] the_path;
 	}
-	cout << "\n";
 }
 
 void run_R(bool show_p, const char* directory, bool show_l)
 {
-	vector<char*> recur_dir;
-	vector<char*> hello = files_inside(directory);
+	vector<string> recur_dir;
+	vector<string> hello = files_inside(directory);
 	size_t u;
 	struct stat s;
 	struct passwd* local;
@@ -310,13 +320,14 @@ void run_R(bool show_p, const char* directory, bool show_l)
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
-		char* the_path = (char*)malloc(BUFSIZ);
-		bool checker = check_if_dot(hello.at(u));
+		//char* the_path = (char*)malloc(BUFSIZ);
+		bool checker = check_if_dot(hello.at(u).c_str());
 		bool dont = dont_do(hello.at(u));
-		strcpy(the_path, directory);
-		strcat(the_path, "/");
-		strcat(the_path, hello.at(u));
-		if(stat(the_path, &s) == -1)
+		string the_path = (string)directory + '/' + hello.at(u);
+		//strcpy(the_path, directory);
+		//strcat(the_path, "/");
+		//strcat(the_path, hello.at(u));
+		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
 			exit(1);
@@ -343,33 +354,31 @@ void run_R(bool show_p, const char* directory, bool show_l)
 			if(show_l)
 			{
 				output_l(s);
-				cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(5) << right << s.st_size << " " << mod << " ";
+				cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(6) << right << s.st_size << " " << mod << " ";
 			}
 			if(S_ISDIR(s.st_mode))
 			{
 				if(dont);
 				else
 				{
-					char* new_path = (char*)malloc(strlen(the_path)+1);
-					strcpy(new_path, the_path);
-					recur_dir.push_back(new_path);
+					recur_dir.push_back(the_path);
 				}
-				cout << blue << basename(the_path) << white << "  ";
+				cout << blue << basename(the_path.c_str()) << white << "  ";
 			}
 			else if(S_IXUSR & s.st_mode)
-				cout << green << basename(the_path) << white << "  ";
+				cout << green << basename(the_path.c_str()) << white << "  ";
 			else
-				cout << white << basename(the_path) << "  ";
+				cout << white << basename(the_path.c_str()) << "  ";
 			if(show_l)
 				cout << endl;
 		}
 	}
-	cout << "\n\n";
 	size_t q;
+	cout << "\n\n";
 	for(q = 0; q < recur_dir.size(); q++)
 	{
-		run_R(show_p, recur_dir.at(q),show_l);
-		delete[] recur_dir.at(q);
+		run_R(show_p, recur_dir.at(q).c_str(),show_l);
+
 	}
 }
 
@@ -411,6 +420,6 @@ int main(int argc, char* argv[])
 			run_R(true, file_path, true);
 		stop++;
 	}while(number_files > stop);
-	delete womp;
+	free(womp);
 	return 0;
 }
