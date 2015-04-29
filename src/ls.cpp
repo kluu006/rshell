@@ -228,7 +228,12 @@ void run_a(bool show_p, const char* directory)
 		else
 			if(!show_p && checker);
 			else
+<<<<<<< HEAD
 				cout << white << basename(the_path.c_str()) << "  ";
+=======
+				cout << white << basename(the_path) << "  ";
+		free(the_path);
+>>>>>>> 3b3e53964e6fd055ed9f8e2770de2dd6bb4e1dd1
 	}
 	cout << "\n";
 	
@@ -264,11 +269,19 @@ void run_l(bool show_p, const char* directory)
 	for(u = 0; u < hello.size(); u++)
 	{
 		//char* the_path = (char*)malloc(BUFSIZ);
+<<<<<<< HEAD
 		bool checker = check_if_dot(hello.at(u).c_str());
 		string the_path = (string)directory + '/' + hello.at(u);
 		//strcpy(the_path, directory);
 		//strcat(the_path, "/");
 		//strcat(the_path, hello.at(u));
+=======
+		bool checker = check_if_dot(hello.at(u));
+		//strcpy(the_path, directory);
+		//strcat(the_path, "/");
+		//strcat(the_path, hello.at(u));
+		string the_path = (string)directory + '/' + (string)hello.at(u);
+>>>>>>> 3b3e53964e6fd055ed9f8e2770de2dd6bb4e1dd1
 		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
@@ -303,6 +316,10 @@ void run_l(bool show_p, const char* directory)
 				cout << white << basename(the_path.c_str()) << "  ";
 			cout << endl;
 		}
+<<<<<<< HEAD
+=======
+		//free(the_path);
+>>>>>>> 3b3e53964e6fd055ed9f8e2770de2dd6bb4e1dd1
 	}
 }
 
@@ -372,13 +389,19 @@ void run_R(bool show_p, const char* directory, bool show_l)
 			if(show_l)
 				cout << endl;
 		}
+		free(the_path);
 	}
 	size_t q;
 	cout << "\n\n";
 	for(q = 0; q < recur_dir.size(); q++)
 	{
+<<<<<<< HEAD
 		run_R(show_p, recur_dir.at(q).c_str(),show_l);
 
+=======
+		run_R(show_p, recur_dir.at(q),show_l);
+		free(recur_dir.at(q));
+>>>>>>> 3b3e53964e6fd055ed9f8e2770de2dd6bb4e1dd1
 	}
 }
 
