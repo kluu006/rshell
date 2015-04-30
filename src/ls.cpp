@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <cmath>
+#include <sys/ioctl.h>
 
 using namespace std;
 
@@ -25,7 +27,6 @@ char** give_path(int pos_parameter, size_t argc, char** argv)
 {
 	char** lol = (char**)malloc(BUFSIZ);
 	size_t i, j;
-	//cout << "hello" << endl;
 	for(i = pos_parameter, j = 0; i < argc; i++, j++)
 		lol[j] = argv[i];
 	lol[j] = NULL;
@@ -125,6 +126,14 @@ bool case_insensitive(const string left, const string right)
 	l_end = leftside.end(),
 	r_start = rightside.begin(),
 	r_end = rightside.end();
+	if(leftside == "." && rightside == "..")
+		return true;
+	else if(leftside == ".." && rightside == ".")
+		return false;
+	while(*r_start == '.')
+		r_start++;
+	while(*l_start == '.')
+		l_start++;
 	for( ;r_end != r_start && l_end != l_start; r_start++, l_start++)
 	{
 		const char right_char = tolower(*r_start);
@@ -159,7 +168,8 @@ vector<string > files_inside(const char* directory)
 	else
 	{
 		perror("open directory");
-		exit(1);
+		//exit(1);
+		return my_files;
 	}
 	if(my_files.size() != 0)
 		sort(my_files.begin(), my_files.end(),case_insensitive);
@@ -193,44 +203,59 @@ int set_width(const vector<string> my_files)
 		if(my_files.at(s).size() > width)
 			width = my_files.at(s).size();
 	}
-	return width;
+	return width + 2;
 }
 void run_a(bool show_p, const char* directory)
 {
 	vector<string> hello = files_inside(directory);
-	size_t u;
+	size_t u, v, w;
 	struct stat s;
-	//int width = set_width(hello);
+	if(hello.size() != 0)
 	cout << directory << ":" << endl;
-	for(u = 0; u < hello.size(); u++)
+	struct winsize WIN;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &WIN);
+	size_t width = set_width(hello);
+	int length = width * hello.size();
+	int k = 0;
+	size_t rows = ceil((double)length/(double)WIN.ws_col);
+	for(u = 0; u < rows; u++)
 	{
-		//char* the_path = (char*)malloc(BUFSIZ);
-		bool checker = check_if_dot(hello.at(u).c_str());
-		string the_path = (string)directory + '/' + hello.at(u);
-		//strcpy(the_path, directory);
-		//strcat(the_path, "/");
-		//strcat(the_path, hello.at(u));
-		if(stat(the_path.c_str(), &s) == -1)
+		for(v = u; v < hello.size(); v += rows, k++)
 		{
-			perror("stat");
-			exit(1);
-		}
-		if(S_ISDIR(s.st_mode))
-		{
-			if(!show_p && checker);
+			bool checker = check_if_dot(hello.at(k).c_str());
+			string the_path = (string)directory + '/' + hello.at(k);
+			if(stat(the_path.c_str(), &s) == -1)
+			{
+				perror("stat");
+				exit(1);
+			}
+			if(S_ISDIR(s.st_mode))
+			{
+				if(!show_p && checker);
+				else
+				{
+					cout << blue << basename(the_path.c_str()) << white;
+					for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+				}
+			}
+			else if(S_IXUSR & s.st_mode)
+			{
+				cout << green << basename(the_path.c_str()) << white;
+				for(w = hello.at(k).length(); w < width; w++)
+					cout << " ";
+			}
 			else
-				cout << blue << basename(the_path.c_str()) << white << "  ";
+				if(!show_p && checker);
+				else
+				{
+					cout << white << basename(the_path.c_str());
+					for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+				}
 		}
-		else if(S_IXUSR & s.st_mode)
-		{
-			cout << green << basename(the_path.c_str()) << white << "  ";
-		}
-		else
-			if(!show_p && checker);
-			else
-				cout << white << basename(the_path.c_str()) << "  ";
+		cout << "\n";
 	}
-	cout << "\n";
 	
 }
 
@@ -260,15 +285,12 @@ void run_l(bool show_p, const char* directory)
 	char* owner_name;
 	char* group_name;
 	string mod;
+	if(hello.size() != 0)
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
-		//char* the_path = (char*)malloc(BUFSIZ);
 		bool checker = check_if_dot(hello.at(u).c_str());
 		string the_path = (string)directory + '/' + hello.at(u);
-		//strcpy(the_path, directory);
-		//strcat(the_path, "/");
-		//strcat(the_path, hello.at(u));
 		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
@@ -294,7 +316,10 @@ void run_l(bool show_p, const char* directory)
 		else
 		{
 			output_l(s);
-			cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(6) << right << s.st_size << " " << mod << " ";
+			cout << " " << setw(2) << right 
+			<< s.st_nlink << " " << owner_name << " " 
+			<< group_name << " " << setw(6) << right << s.st_size
+			<< " " << mod << " ";
 			if(S_ISDIR(s.st_mode))
 				cout << blue << basename(the_path.c_str()) << white << "  ";
 			else if(S_IXUSR & s.st_mode)
@@ -317,16 +342,13 @@ void run_R(bool show_p, const char* directory, bool show_l)
 	char* owner_name;
 	char* group_name;
 	string mod;
+	if(hello.size() != 0)
 	cout << directory << ":" << endl;
 	for(u = 0; u < hello.size(); u++)
 	{
-		//char* the_path = (char*)malloc(BUFSIZ);
 		bool checker = check_if_dot(hello.at(u).c_str());
 		bool dont = dont_do(hello.at(u));
 		string the_path = (string)directory + '/' + hello.at(u);
-		//strcpy(the_path, directory);
-		//strcat(the_path, "/");
-		//strcat(the_path, hello.at(u));
 		if(stat(the_path.c_str(), &s) == -1)
 		{
 			perror("stat");
@@ -354,7 +376,10 @@ void run_R(bool show_p, const char* directory, bool show_l)
 			if(show_l)
 			{
 				output_l(s);
-				cout << " " << setw(2) << right << s.st_nlink << " " << owner_name << " " << group_name << " " << setw(6) << right << s.st_size << " " << mod << " ";
+				cout << " " << setw(2) << right 
+				<< s.st_nlink << " " << owner_name << " " 
+				<< group_name << " " << setw(6) << right << s.st_size 
+				<< " " << mod << " ";
 			}
 			if(S_ISDIR(s.st_mode))
 			{
@@ -387,17 +412,14 @@ int main(int argc, char* argv[])
 	int parameter = 1; //start at first flag
 	int flags_bin;
 	flags_bin = binary_flag(parameter, argc, argv);	//gives what combo to do
-	//cout << flags_bin << endl << parameter << endl;
-	//cout << argc << endl;
 	char** womp;
 	womp = give_path(parameter, argc, argv);
-	//for(int i = 0; *womp !=NULL && parameter < argc && i < 3; i++)
-	//	cout << *womp << endl;
 	int number_files = argc - parameter;
 	int stop = 0;
 	const char* file_path;
 	do
 	{
+		cout << '\n';
 		if(womp[0] == NULL)
 			file_path = ".";
 		else
