@@ -21,6 +21,8 @@ using namespace std;
 char blue[] = {"\033[1;34m"};
 char white[] = {"\033[0;00m"};
 char green[] = {"\033[1;32m"};
+char blue_background[] = {"\033[1;47;34m"};
+char green_background[] = {"\033[1;47;32m"};
 enum what_flags{nothing, flag_a, flag_l, flag_R} flag_check;
 
 char** give_path(int pos_parameter, size_t argc, char** argv)
@@ -203,7 +205,7 @@ int set_width(const vector<string> my_files)
 		if(my_files.at(s).size() > width)
 			width = my_files.at(s).size();
 	}
-	return width + 2;
+	return width + 1;
 }
 void run_a(bool show_p, const char* directory)
 {
@@ -217,7 +219,7 @@ void run_a(bool show_p, const char* directory)
 	size_t width = set_width(hello);
 	int length = width * hello.size();
 	int k = 0;
-	size_t rows = ceil((double)length/(double)WIN.ws_col);
+	size_t rows = ceil((double)length/(double)(WIN.ws_col));
 	for(u = 0; u < rows; u++)
 	{
 		for(v = u; v < hello.size(); v += rows, k++)
@@ -232,6 +234,12 @@ void run_a(bool show_p, const char* directory)
 			if(S_ISDIR(s.st_mode))
 			{
 				if(!show_p && checker);
+				else if(show_p && checker)
+				{
+					cout << blue_background << basename(the_path.c_str()) << white;
+					for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+				}
 				else
 				{
 					cout << blue << basename(the_path.c_str()) << white;
@@ -241,11 +249,21 @@ void run_a(bool show_p, const char* directory)
 			}
 			else if(S_IXUSR & s.st_mode)
 			{
-				cout << green << basename(the_path.c_str()) << white;
-				for(w = hello.at(k).length(); w < width; w++)
-					cout << " ";
+				if(show_p && checker)
+				{
+					cout << green_background << basename(the_path.c_str()) << white;
+					for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+				}
+				else
+				{
+					cout << green << basename(the_path.c_str()) << white;
+					for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+				}
 			}
 			else
+			{
 				if(!show_p && checker);
 				else
 				{
@@ -253,6 +271,7 @@ void run_a(bool show_p, const char* directory)
 					for(w = hello.at(k).length(); w < width; w++)
 						cout << " ";
 				}
+			}
 		}
 		cout << "\n";
 	}
@@ -261,8 +280,9 @@ void run_a(bool show_p, const char* directory)
 
 void output_l(const struct stat s)
 {
-	if(S_ISLNK(s.st_mode)) cout << "s";
+	if(S_ISLNK(s.st_mode)) cout << "l";
 	else if(S_ISDIR(s.st_mode)) cout << "d";
+	else if(S_ISSOCK(s.st_mode)) cout << "s";
 	else cout << "-";
 	cout << ((S_IRUSR & s.st_mode) ? "r" : "-");
 	cout << ((S_IWUSR & s.st_mode) ? "w" : "-");
@@ -273,6 +293,26 @@ void output_l(const struct stat s)
 	cout << ((S_IROTH & s.st_mode) ? "r" : "-");
 	cout << ((S_IWOTH & s.st_mode) ? "w" : "-");
 	cout << ((S_IXOTH & s.st_mode) ? "x" : "-");
+}
+
+void total_size(bool show_p, const vector<string> hello, const char* directory)
+{
+	size_t total = 0;
+	struct stat s;
+	size_t u;
+	for(u = 0; u < hello.size(); u++)
+	{
+		bool checker = check_if_dot(hello.at(u).c_str());
+		string the_path = (string)directory + '/' + hello.at(u);
+		if(stat(the_path.c_str(), &s) == -1)
+		{
+			perror("stat");
+			exit(1);
+		}
+		if(!show_p && checker);
+		else total += s.st_blocks;
+	}
+	cout << "total " << total/2 << endl;
 }
 
 void run_l(bool show_p, const char* directory)
@@ -286,7 +326,10 @@ void run_l(bool show_p, const char* directory)
 	char* group_name;
 	string mod;
 	if(hello.size() != 0)
-	cout << directory << ":" << endl;
+	{
+		cout << directory << ":" << endl;
+		total_size(show_p, hello, directory);
+	}
 	for(u = 0; u < hello.size(); u++)
 	{
 		bool checker = check_if_dot(hello.at(u).c_str());
@@ -313,6 +356,21 @@ void run_l(bool show_p, const char* directory)
 		mod = ctime(&s.st_mtime);
 		mod = mod.substr(4,12);
 		if(!show_p && checker);
+		else if(show_p && checker)
+		{
+			output_l(s);
+			cout << " " << setw(2) << right 
+			<< s.st_nlink << " " << owner_name << " " 
+			<< group_name << " " << setw(6) << right << s.st_size
+			<< " " << mod << " ";
+			if(S_ISDIR(s.st_mode))
+				cout << blue_background << basename(the_path.c_str()) << white << "  ";
+			else if(S_IXUSR & s.st_mode)
+				cout << green_background << basename(the_path.c_str()) << white << "  ";
+			else
+				cout << white << basename(the_path.c_str()) << "  ";
+			cout << endl;
+		}
 		else
 		{
 			output_l(s);
@@ -335,7 +393,7 @@ void run_R(bool show_p, const char* directory, bool show_l)
 {
 	vector<string> recur_dir;
 	vector<string> hello = files_inside(directory);
-	size_t u;
+	size_t u, v, w;
 	struct stat s;
 	struct passwd* local;
 	struct group* group;
@@ -343,63 +401,144 @@ void run_R(bool show_p, const char* directory, bool show_l)
 	char* group_name;
 	string mod;
 	if(hello.size() != 0)
-	cout << directory << ":" << endl;
-	for(u = 0; u < hello.size(); u++)
 	{
-		bool checker = check_if_dot(hello.at(u).c_str());
-		bool dont = dont_do(hello.at(u));
-		string the_path = (string)directory + '/' + hello.at(u);
-		if(stat(the_path.c_str(), &s) == -1)
+		cout << directory << ":" << endl;
+		if(show_l) total_size(show_p, hello, directory);
+	}
+	struct winsize WIN;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &WIN);
+	size_t width = set_width(hello);
+	int length = width * hello.size();
+	int k = 0;
+	size_t rows = ceil((double)length/(double)WIN.ws_col);
+	for(u = 0; u < rows; u++)
+	{
+		for(v = u; v < hello.size(); v += rows, k++)
 		{
-			perror("stat");
-			exit(1);
-		}
-		local = getpwuid(s.st_uid);
-		if(local == NULL)
-		{
-			perror("getpwuid");
-			exit(1);
-		}
-		group = getgrgid(s.st_gid);
-		if(group == NULL)
-		{
-			perror("getgrgid");
-			exit(1);
-		}
-		owner_name = local->pw_name;
-		group_name = group->gr_name;
-		mod = ctime(&s.st_mtime);
-		mod = mod.substr(4,12);
-		if(!show_p && checker);
-		else
-		{
-			if(show_l)
+			bool checker = check_if_dot(hello.at(k).c_str());
+			bool dont = dont_do(hello.at(k));
+			string the_path = (string)directory + '/' + hello.at(k);
+			if(stat(the_path.c_str(), &s) == -1)
 			{
-				output_l(s);
-				cout << " " << setw(2) << right 
-				<< s.st_nlink << " " << owner_name << " " 
-				<< group_name << " " << setw(6) << right << s.st_size 
-				<< " " << mod << " ";
+				perror("stat");
+				exit(1);
 			}
-			if(S_ISDIR(s.st_mode))
+			local = getpwuid(s.st_uid);
+			if(local == NULL)
 			{
-				if(dont);
+				perror("getpwuid");
+				exit(1);
+			}
+			group = getgrgid(s.st_gid);
+			if(group == NULL)
+			{
+				perror("getgrgid");
+				exit(1);
+			}
+			owner_name = local->pw_name;
+			group_name = group->gr_name;
+			mod = ctime(&s.st_mtime);
+			mod = mod.substr(4,12);
+			if(!show_p && checker);
+			else if(show_p && checker)
+			{
+				if(show_l)
+				{
+					output_l(s);
+					cout << " " << setw(2) << right 
+					<< s.st_nlink << " " << owner_name << " " 
+					<< group_name << " " << setw(6) << right << s.st_size 
+					<< " " << mod << " ";
+				}
+				if(S_ISDIR(s.st_mode))
+				{
+					if(dont);
+					else
+					{
+						recur_dir.push_back(the_path);
+					}
+
+					cout << blue_background << basename(the_path.c_str()) << white;
+					if(!show_l)
+					{
+						for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+					}
+				}
+				else if(S_IXUSR & s.st_mode)
+				{
+					cout << green_background << basename(the_path.c_str()) << white;
+					if(!show_l)
+					{
+						for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+					}
+				}
 				else
 				{
-					recur_dir.push_back(the_path);
+					cout << white << basename(the_path.c_str());
+					if(!show_l)
+					{
+						for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+					}
 				}
-				cout << blue << basename(the_path.c_str()) << white << "  ";
+				if(show_l)
+					cout << endl;
+				
 			}
-			else if(S_IXUSR & s.st_mode)
-				cout << green << basename(the_path.c_str()) << white << "  ";
 			else
-				cout << white << basename(the_path.c_str()) << "  ";
-			if(show_l)
-				cout << endl;
+			{
+				if(show_l)
+				{
+					output_l(s);
+					cout << " " << setw(2) << right 
+					<< s.st_nlink << " " << owner_name << " " 
+					<< group_name << " " << setw(6) << right << s.st_size 
+					<< " " << mod << " ";
+				}
+				if(S_ISDIR(s.st_mode))
+				{
+					if(dont);
+					else
+					{
+						recur_dir.push_back(the_path);
+					}
+
+					cout << blue << basename(the_path.c_str()) << white;
+					if(!show_l)
+					{
+						for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+					}
+				}
+				else if(S_IXUSR & s.st_mode)
+				{
+					cout << green << basename(the_path.c_str()) << white;
+					if(!show_l)
+					{
+						for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+					}
+				}
+				else
+				{
+					cout << white << basename(the_path.c_str());
+					if(!show_l)
+					{
+						for(w = hello.at(k).length(); w < width; w++)
+						cout << " ";
+					}
+				}
+				if(show_l)
+					cout << endl;
+				
+			}
 		}
+		if(!show_l) cout << '\n';
 	}
+	cout << '\n';
 	size_t q;
-	cout << "\n\n";
 	for(q = 0; q < recur_dir.size(); q++)
 	{
 		run_R(show_p, recur_dir.at(q).c_str(),show_l);
@@ -419,7 +558,8 @@ int main(int argc, char* argv[])
 	const char* file_path;
 	do
 	{
-		cout << '\n';
+		if(stop == 0);
+		else cout << '\n';
 		if(womp[0] == NULL)
 			file_path = ".";
 		else
