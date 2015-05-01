@@ -15,24 +15,50 @@ Having an empty command returns false. There is no error output.
 
 Comments are marked as `#`. Anything after the comment will not be ran.
 
-## How to run rshell
+# ls
+
+It is my version of ls. Directories are colored as blue, executables as green, hidden directories as blue with a gray background, hidden executables as green with a gray background, and other files as white.
+
+Instead of outputting vertically, my ls will output horizontally.
+
+Flags that are enabled are `-a`, `-l`, and `-R`. Any combo of those three can be pass through as flags, for example, `-aR` or `-laR`.
+
+Flags can be passed through one by one or by any combo too. For example `-a -l -R` or `-aR -l`.
+
+Every input starting with a `-` will be passed through as a flag.
+
+Input without a `-` are passed through as directories. Multiple directories can be inputted. Attempting to pass a flag after a directory will not be read as a flag, but rather as a directory. For example, `-a ../.. ~/ -R` the `-R` will be passed through as a directory.
+
+**NOTE:**
+Passing in multiple valid flags of the same flag will not output an error, instead will recognize it as a flag. For example, `-aaaaaaRllllRaaall` is simply `-aRl`.
+Any flag besides those three are ignored. For example `-eeeea -Ru123` is the flag `-aR`. 
+If all flags are neither `-a -l -R`, then it is simply executed as normal ls with no flags.
+
+## How to run
 
 ```
 $git clone https://github.com/kluu006/rshell.git
 $cd rshell
-$git checkout hw0
+$git checkout hw1
 $make
 $bin/rshell
+$bin/ls
 
 ```
-## Bugs / Limitations
+## Bugs / Limitations for rshell
 
 ```
 Echo with quotes will not work as expected.
 echo can output standard in; however, cannot write to a file with quotations.
 
 ```
+## Bugs / Limitations for ls
 
-## Licensing
+```
+When running -R, an extra new line is at the bottom; it was put in recursively.
+Sometimes there are random lines with nothing on them when it comes to directories with a lot of files. This is due to spacing extending pass the terminal width.
+
+```
+##Licensing
 
 Licensing can be found [here](/LICENSE).
