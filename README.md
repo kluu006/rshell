@@ -27,7 +27,7 @@ Flags can be passed through one by one or by any combo too. For example `-a -l -
 
 Every input starting with a `-` will be passed through as a flag.
 
-Input without a `-` are passed through as directories. Multiple directories can be inputted. Attempting to pass a flag after a directory will not be read as a flag, but rather as a directory. For example, `-a ../.. ~/ -R` the `-R` will be passed through as a directory.
+Input without a `-` are passed through as directories. Multiple directories can be inputted.
 
 **NOTE:**
 Passing in multiple valid flags of the same flag will not output an error, instead will recognize it as a flag. For example, `-aaaaaaRllllRaaall` is simply `-aRl`.
@@ -56,7 +56,7 @@ echo can output standard in; however, cannot write to a file with quotations.
 
 ```
 When running -R, an extra new line is at the bottom; it was put in recursively.
-Sometimes there are random lines with nothing on them when it comes to directories with a lot of files. This is due to spacing extending pass the terminal width.
+When opening or closing a directory, there are extra blank lines.
 
 ```
 ##Licensing
