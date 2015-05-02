@@ -19,7 +19,7 @@ Comments are marked as `#`. Anything after the comment will not be ran.
 
 It is my version of ls. Directories are colored as blue, executables as green, hidden directories as blue with a gray background, hidden executables as green with a gray background, and other files as white.
 
-Instead of outputting vertically, my ls will output horizontally.
+Instead of outputting vertically, my ls will output horizontally. For non `-l` flags, there is a column width that the outputs follow, it is more noticeable when output exceeds one line.
 
 Flags that are enabled are `-a`, `-l`, and `-R`. Any combo of those three can be pass through as flags, for example, `-aR` or `-laR`.
 
@@ -31,6 +31,7 @@ Input without a `-` are passed through as directories. Multiple directories can 
 
 **NOTE:**
 Passing in multiple valid flags of the same flag will not output an error, instead will recognize it as a flag. For example, `-aaaaaaRllllRaaall` is simply `-aRl`.
+
 Any flag besides those three are ignored. For example `-eeeea -Ru123` is the flag `-aR`. 
 If all flags are neither `-a -l -R`, then it is simply executed as normal ls with no flags.
 
@@ -56,7 +57,7 @@ echo can output standard in; however, cannot write to a file with quotations.
 
 ```
 When running -R, an extra new line is at the bottom; it was put in recursively.
-When opening or closing a directory, there are extra blank lines.
+When opening or closing a directory, there are extra blank lines outputted.
 
 ```
 ##Licensing
