@@ -189,7 +189,8 @@ vector<string > files_inside(const char* directory, bool& kek)
 	{
 		if(stat(directory, &s) == -1)
 		{	
-			perror("cannot open directory or file");
+			perror("opendir");
+			perror("stat");
 		}
 		else
 		{
