@@ -6,9 +6,19 @@
 #include <stdlib.h>
 #include <cstring>
 #include <vector>
+#include <errno.h>
+#include <fcntl.h>
 
 using namespace std;
-
+const string in_re = "<";
+const string out_re = ">";
+const string out_re2 = ">>";
+const string pipes = "|";
+const string space = " ";
+const string or_c = "||";
+const string and_c = "&&";
+const string semi_c = ";";
+const string num_s = "#";
 void display_name()
 {
 	char* login = getlogin();
@@ -29,6 +39,94 @@ void display_name()
 	
 }
 
+void add_spaces(string& user_input)
+{
+	int num_i = user_input.find(num_s, 0);
+	if(num_i >= 0)
+	{
+		user_input = user_input.substr(0,num_i);	//look for a comment
+	}
+	int index = 0;
+	string::iterator it;					//this is a helper function
+	for(it = user_input.begin(); it < user_input.end(); it++, index++) //love my variables
+	{
+		int wtf = user_input.find(semi_c, index);
+		int lamp = user_input.find(or_c, index);
+		int melon = user_input.find(and_c, index);
+		if(wtf >= 0 && (wtf < lamp || lamp == -1) && (wtf < melon || melon == -1))//adds spaces if semi colon found
+		{
+			user_input.insert(user_input.find(semi_c, index), " ");
+
+			user_input.insert(user_input.find(semi_c, index)+1, " ");
+			it = user_input.begin();
+			it += user_input.find(semi_c, index) +1;
+			index = user_input.find(semi_c, index) +1;
+		}
+		else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp < melon || melon == -1))//adds spaces if or connector found
+		{
+			user_input.insert(user_input.find(or_c, index), " ");
+		
+			user_input.insert(user_input.find(or_c, index)+2, " ");
+			it = user_input.begin();
+			it += user_input.find(or_c, index) + 2;
+			index = user_input.find(or_c, index) +2;
+		}
+		else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1))//adds spaces if and connector found
+		{
+			user_input.insert(user_input.find(and_c, index), " ");
+		
+			user_input.insert(user_input.find(and_c, index)+2, " ");
+			it = user_input.begin();
+			it += user_input.find(and_c, index) + 2;
+			index = user_input.find(and_c, index) +2;
+		}
+	}
+	index = 0;
+	for(it = user_input.begin(); it < user_input.end(); it++, index++) //love my variables
+	{
+		int wtf = user_input.find(in_re, index);
+		int lamp = user_input.find(out_re, index);
+		int melon = user_input.find(out_re2, index);
+		int wombo = user_input.find(pipes, index);
+		if(wtf >= 0 && (wtf < lamp || lamp == -1) && (wtf < melon || melon == -1) && (wtf < wombo || wombo ==-1))//adds spaces if semi colon found
+		{
+			user_input.insert(user_input.find(in_re, index), " ");
+
+			user_input.insert(user_input.find(in_re, index)+1, " ");
+			it = user_input.begin();
+			it += user_input.find(in_re, index) +1;
+			index = user_input.find(in_re, index) +1;
+		}
+		else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp < melon || melon == -1) && (lamp < wombo || wombo == -1))//adds spaces if or connector found
+		{
+			user_input.insert(user_input.find(out_re, index), " ");
+		
+			user_input.insert(user_input.find(out_re, index)+1, " ");
+			it = user_input.begin();
+			it += user_input.find(out_re, index) + 1;
+			index = user_input.find(out_re, index) +1;
+		}
+		else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1) && (melon < wombo || wombo == -1))//adds spaces if and connector found
+		{
+			user_input.insert(user_input.find(out_re2, index), " ");
+		
+			user_input.insert(user_input.find(out_re2, index)+2, " ");
+			it = user_input.begin();
+			it += user_input.find(out_re2, index) + 2;
+			index = user_input.find(out_re2, index) +2;
+		}
+		else if(wombo >= 0 && (wombo < wtf || wtf == -1) && (wombo < lamp || lamp == -1) && (wombo < melon || melon == -1))//adds spaces if and connector found
+		{
+			user_input.insert(user_input.find(pipes, index), " ");
+		
+			user_input.insert(user_input.find(pipes, index)+1, " ");
+			it = user_input.begin();
+			it += user_input.find(pipes, index) + 1;
+			index = user_input.find(pipes, index) +1;
+		}
+	}
+}
+
 bool contain_exit(char** terminate)	//check if exit
 {
 	string exit_p = *terminate;
@@ -37,17 +135,9 @@ bool contain_exit(char** terminate)	//check if exit
 	else
 		return false;
 }
-void tokenizer(string& conditional, char**& lol, char*& the_token)
+void tokenizer(string& conditional, char**& lol, char*& the_token, bool& redirection)
 {
 	string user_input;
-	string space = " ";
-	string or_c = "||";
-	string and_c = "&&";
-	string semi_c = ";";
-	string in_re = "<";
-	string out_re = ">";
-	string out_re2 = ">>";
-	string pipe = "|";
 	int count = 0;
 	size_t neg_f = -1;
 	char** new_lol = (char**)malloc(BUFSIZ);
@@ -55,9 +145,13 @@ void tokenizer(string& conditional, char**& lol, char*& the_token)
 	while(!token_flag && the_token != NULL)
 	{
 		string b = the_token;
-		if((b.find(or_c) != neg_f) || (b.find(and_c) != neg_f) || (b.find(semi_c) != neg_f) || (b.find(in_re) != neg_f) || (b.find(out_re) != neg_f) || (b.find(out_re2) != neg_f) || (b.find(pipe) != neg_f))
+		if((b.find(or_c) != neg_f) || (b.find(and_c) != neg_f) || (b.find(semi_c) != neg_f))
 		{
 			token_flag = true;	//if found connector, end parse
+		}
+		if((b.find(in_re) != neg_f) || (b.find(out_re) != neg_f) || (b.find(out_re2) != neg_f) || (b.find(pipes) != neg_f))
+		{
+			redirection = true;
 		}
 		if(!token_flag)
 		{
@@ -76,6 +170,61 @@ void tokenizer(string& conditional, char**& lol, char*& the_token)
 		new_lol[count] = NULL;		// if no connector still add NULL
 	}
 	lol = new_lol;
+}
+
+void redirectioner(string& conditional_re, char**& wolol, char** lol, bool& redirection, size_t& index_re)
+{
+	bool redir_flag = false;
+	char** wololo = (char**)malloc(BUFSIZ);
+	for(size_t i = index_re, j = 0; lol[i] != NULL && !redir_flag; i++, index_re++)
+	{
+		string hello = lol[i];
+		if(hello == out_re) conditional_re = out_re, wololo[j] = NULL, redir_flag = true;
+		else wololo[j] = lol[i], j++;
+	}
+	wolol = wololo;
+	if(redir_flag == false) redirection = false;
+}
+
+vector<string> grab_files(char** lol, size_t index_re)
+{
+	vector<string> the_files;
+	bool redir_flag = false;
+	for(size_t i = index_re; lol[i] != NULL && !redir_flag; i++)
+	{
+		if((string)lol[i] == in_re || (string)lol[i] == out_re || (string)lol[i] == out_re2 || (string)lol[i] == pipes) redir_flag = true;
+		else the_files.push_back(lol[i]);
+	}
+	return the_files;
+}
+
+bool run_redir(string conditional, char** wolol, vector<string> files)
+{
+	int fd[2];
+	if(-1 == pipe(fd)) perror("pipe"), exit(1);
+	for(size_t u = 0; u < files.size(); u++)
+	{
+		int id = -1;
+		if(conditional == ">")
+		{
+			id = open(files.at(u).c_str(), O_WRONLY| O_CREAT, 00664);
+			cout << id << endl;
+		}
+		int pid = fork();
+		if (pid == 0){
+			close(1);
+			dup(id);// was closed, but now assign fd[1] to the file descriptor that was closed
+			execvp(wolol[0], wolol);
+		}
+		else if(pid > 0){
+			wait(0);
+			close(id);
+			close(0);
+			dup(fd[0]);
+		}
+	}
+	close(fd[0]);
+	return true;
 }
 
 bool run_execvp(char** arg)
@@ -119,104 +268,16 @@ bool run_execvp(char** arg)
 
 int main(int argc, char* argv[])
 {
+	int descrip_in = dup(0);
+	if(descrip_in == -1) perror("dup"), exit(1);
+	int descrip_out = dup(1);
+	if(descrip_out == -1) perror("dup"), exit(1);
 	while(cin.good())		//whenever there is a system call remember to have perror
 	{
 		display_name();
 		string user_input;
-		string space = " ";
-		string or_c = "||";
-		string and_c = "&&";
-		string semi_c = ";";
-		string num_s = "#";	
 		getline(cin, user_input);			//user input
-		int num_i = user_input.find(num_s, 0);
-		if(num_i >= 0)
-		{
-			user_input = user_input.substr(0,num_i);	//look for a comment
-		}
-		int index = 0;
-		string::iterator it;					//this is a helper function
-		for(it = user_input.begin(); it < user_input.end(); it++, index++) //love my variables
-		{
-			int wtf = user_input.find(semi_c, index);
-			int lamp = user_input.find(or_c, index);
-			int melon = user_input.find(and_c, index);
-			if(wtf >= 0 && (wtf < lamp || lamp == -1) && (wtf < melon || melon == -1))//adds spaces if semi colon found
-			{
-				user_input.insert(user_input.find(semi_c, index), " ");
-
-				user_input.insert(user_input.find(semi_c, index)+1, " ");
-				it = user_input.begin();
-				it += user_input.find(semi_c, index) +1;
-				index = user_input.find(semi_c, index) +1;
-			}
-			else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp < melon || melon == -1))//adds spaces if or connector found
-			{
-				user_input.insert(user_input.find(or_c, index), " ");
-			
-				user_input.insert(user_input.find(or_c, index)+2, " ");
-				it = user_input.begin();
-				it += user_input.find(or_c, index) + 2;
-				index = user_input.find(or_c, index) +2;
-			}
-			else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1))//adds spaces if and connector found
-			{
-				user_input.insert(user_input.find(and_c, index), " ");
-			
-				user_input.insert(user_input.find(and_c, index)+2, " ");
-				it = user_input.begin();
-				it += user_input.find(and_c, index) + 2;
-				index = user_input.find(and_c, index) +2;
-			}
-		}
-		string in_re = "<";
-		string out_re = ">";
-		string out_re2 = ">>";
-		string pipe = "|";
-		index = 0;
-		for(it = user_input.begin(); it < user_input.end(); it++, index++) //love my variables
-		{
-			int wtf = user_input.find(in_re, index);
-			int lamp = user_input.find(out_re, index);
-			int melon = user_input.find(out_re2, index);
-			int wombo = user_input.find(pipe, index);
-			if(wtf >= 0 && (wtf < lamp || lamp == -1) && (wtf < melon || melon == -1) && (wtf < wombo || wombo ==-1))//adds spaces if semi colon found
-			{
-				user_input.insert(user_input.find(in_re, index), " ");
-
-				user_input.insert(user_input.find(in_re, index)+1, " ");
-				it = user_input.begin();
-				it += user_input.find(in_re, index) +1;
-				index = user_input.find(in_re, index) +1;
-			}
-			else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp < melon || melon == -1) && (lamp < wombo || wombo == -1))//adds spaces if or connector found
-			{
-				user_input.insert(user_input.find(out_re, index), " ");
-			
-				user_input.insert(user_input.find(out_re, index)+1, " ");
-				it = user_input.begin();
-				it += user_input.find(out_re, index) + 1;
-				index = user_input.find(out_re, index) +1;
-			}
-			else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1) && (melon < wombo || wombo == -1))//adds spaces if and connector found
-			{
-				user_input.insert(user_input.find(out_re2, index), " ");
-			
-				user_input.insert(user_input.find(out_re2, index)+2, " ");
-				it = user_input.begin();
-				it += user_input.find(out_re2, index) + 2;
-				index = user_input.find(out_re2, index) +2;
-			}
-			else if(wombo >= 0 && (wombo < wtf || wtf == -1) && (wombo < lamp || lamp == -1) && (wombo < melon || melon == -1))//adds spaces if and connector found
-			{
-				user_input.insert(user_input.find(pipe, index), " ");
-			
-				user_input.insert(user_input.find(pipe, index)+1, " ");
-				it = user_input.begin();
-				it += user_input.find(pipe, index) + 1;
-				index = user_input.find(pipe, index) +1;
-			}
-		}
+		add_spaces(user_input);
 		char* womp = (char*)user_input.c_str();
 		char* token;
 		token = strtok(womp, " \t\n"); //token by spaces and tabs
@@ -228,51 +289,68 @@ int main(int argc, char* argv[])
 			bool prev_and = true;
 			while(token != NULL)
 			{
-				tokenizer(condition, lol, token); //parses char** as commands, lol is the command, condition is the connector
-				if(*lol != NULL && !prev_or && prev_and)
-					if(contain_exit(lol)) exit(1);	//exits program
-				if(condition == or_c)
+				bool redirection = false;
+				tokenizer(condition, lol, token,redirection); //parses char** as commands, lol is the command, condition is the connector
+				char** lol_1;
+				string condition_re;
+				size_t index_re = 0;
+				//if(redirection) lol_1 = lol;//check if leak
+				if(!redirection)
 				{
-					if(prev_or);			//if previous condition true, does not run exec
-					else if(!prev_and)
+					if(*lol != NULL && !prev_or && prev_and)
+						if(contain_exit(lol)) exit(1);	//exits program
+					if(condition == or_c)
 					{
-						prev_and = true;	//case where previous condition was AND and that it failed the previous condition
-						prev_or = false;
+						if(prev_or);			//if previous condition true, does not run exec
+						else if(!prev_and)
+						{
+							prev_and = true;	//case where previous condition was AND and that it failed the previous condition
+							prev_or = false;
+						}
+						else if(run_execvp(lol) == true)	//current statement is true
+						{
+							if(token != NULL)
+								prev_or = true;		//sets to know that the previous condition under OR is true
+						}
 					}
-					else if(run_execvp(lol) == true)	//current statement is true
+					else if(condition == and_c)
 					{
-						if(token != NULL)
-							prev_or = true;		//sets to know that the previous condition under OR is true
+						if(!prev_and);			//if previous condition was false; does not run exec
+						else if(prev_or)
+						{
+							prev_and = true;
+							prev_or = false;
+						}
+						else if(run_execvp(lol) == false)	//current statement is false
+						{
+							if(token != NULL)
+								prev_and = false;
+						}
+
 					}
-				}
-				else if(condition == and_c)
-				{
-					if(!prev_and);			//if previous condition was false; does not run exec
-					else if(prev_or)
+					else if(condition == semi_c)	
 					{
+						if(!prev_or && prev_and)
+						{
+							if(run_execvp(lol));	//runs if previous or was false and if previous and was true
+						}
+						prev_or = false;	//resets conditions for passing exec
 						prev_and = true;
-						prev_or = false;
 					}
-					else if(run_execvp(lol) == false)	//current statement is false
-					{
-						if(token != NULL)
-							prev_and = false;
-					}
-
+					else
+						if(run_execvp(lol));
+					free(lol);	//remember to delete char** at end of command to prevent memory leaks
 				}
-				else if(condition == semi_c)	
+				while(redirection)
 				{
-					if(!prev_or && prev_and)
-					{
-						if(run_execvp(lol));	//runs if previous or was false and if previous and was true
-					}
-					prev_or = false;	//resets conditions for passing exec
-					prev_and = true;
+					char** wolol;
+					redirectioner(condition_re, wolol, lol, redirection, index_re);
+					vector<string> files = grab_files(lol, index_re);
+					bool a = run_redir(condition_re, wolol, files);
+					redirection = false;
 				}
-				else
-					if(run_execvp(lol));
-				delete lol;	//remember to delete char** at end of command to prevent memory leaks
-
+				dup2(descrip_in, 0);
+				dup2(descrip_out, 1);
 			}
 			break;
 		}
