@@ -44,6 +44,10 @@ void tokenizer(string& conditional, char**& lol, char*& the_token)
 	string or_c = "||";
 	string and_c = "&&";
 	string semi_c = ";";
+	string in_re = "<";
+	string out_re = ">";
+	string out_re2 = ">>";
+	string pipe = "|";
 	int count = 0;
 	size_t neg_f = -1;
 	char** new_lol = (char**)malloc(BUFSIZ);
@@ -51,7 +55,7 @@ void tokenizer(string& conditional, char**& lol, char*& the_token)
 	while(!token_flag && the_token != NULL)
 	{
 		string b = the_token;
-		if((b.find(or_c) != neg_f) || (b.find(and_c) != neg_f) || (b.find(semi_c) != neg_f))
+		if((b.find(or_c) != neg_f) || (b.find(and_c) != neg_f) || (b.find(semi_c) != neg_f) || (b.find(in_re) != neg_f) || (b.find(out_re) != neg_f) || (b.find(out_re2) != neg_f) || (b.find(pipe) != neg_f))
 		{
 			token_flag = true;	//if found connector, end parse
 		}
@@ -123,8 +127,7 @@ int main(int argc, char* argv[])
 		string or_c = "||";
 		string and_c = "&&";
 		string semi_c = ";";
-		string num_s = "#";
-
+		string num_s = "#";	
 		getline(cin, user_input);			//user input
 		int num_i = user_input.find(num_s, 0);
 		if(num_i >= 0)
@@ -164,6 +167,54 @@ int main(int argc, char* argv[])
 				it = user_input.begin();
 				it += user_input.find(and_c, index) + 2;
 				index = user_input.find(and_c, index) +2;
+			}
+		}
+		string in_re = "<";
+		string out_re = ">";
+		string out_re2 = ">>";
+		string pipe = "|";
+		index = 0;
+		for(it = user_input.begin(); it < user_input.end(); it++, index++) //love my variables
+		{
+			int wtf = user_input.find(in_re, index);
+			int lamp = user_input.find(out_re, index);
+			int melon = user_input.find(out_re2, index);
+			int wombo = user_input.find(pipe, index);
+			if(wtf >= 0 && (wtf < lamp || lamp == -1) && (wtf < melon || melon == -1) && (wtf < wombo || wombo ==-1))//adds spaces if semi colon found
+			{
+				user_input.insert(user_input.find(in_re, index), " ");
+
+				user_input.insert(user_input.find(in_re, index)+1, " ");
+				it = user_input.begin();
+				it += user_input.find(in_re, index) +1;
+				index = user_input.find(in_re, index) +1;
+			}
+			else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp < melon || melon == -1) && (lamp < wombo || wombo == -1))//adds spaces if or connector found
+			{
+				user_input.insert(user_input.find(out_re, index), " ");
+			
+				user_input.insert(user_input.find(out_re, index)+1, " ");
+				it = user_input.begin();
+				it += user_input.find(out_re, index) + 1;
+				index = user_input.find(out_re, index) +1;
+			}
+			else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1) && (melon < wombo || wombo == -1))//adds spaces if and connector found
+			{
+				user_input.insert(user_input.find(out_re2, index), " ");
+			
+				user_input.insert(user_input.find(out_re2, index)+2, " ");
+				it = user_input.begin();
+				it += user_input.find(out_re2, index) + 2;
+				index = user_input.find(out_re2, index) +2;
+			}
+			else if(wombo >= 0 && (wombo < wtf || wtf == -1) && (wombo < lamp || lamp == -1) && (wombo < melon || melon == -1))//adds spaces if and connector found
+			{
+				user_input.insert(user_input.find(pipe, index), " ");
+			
+				user_input.insert(user_input.find(pipe, index)+1, " ");
+				it = user_input.begin();
+				it += user_input.find(pipe, index) + 1;
+				index = user_input.find(pipe, index) +1;
 			}
 		}
 		char* womp = (char*)user_input.c_str();
