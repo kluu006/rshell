@@ -19,6 +19,8 @@ const string or_c = "||";
 const string and_c = "&&";
 const string semi_c = ";";
 const string num_s = "#";
+int descrip_in;
+int descrip_out;
 void display_name()
 {
 	char* login = getlogin();
@@ -85,8 +87,8 @@ void add_spaces(string& user_input)
 	for(it = user_input.begin(); it < user_input.end(); it++, index++) //love my variables
 	{
 		int wtf = user_input.find(in_re, index);
-		int lamp = user_input.find(out_re, index);
-		int melon = user_input.find(out_re2, index);
+		int lamp = user_input.find(out_re2, index);
+		int melon = user_input.find(out_re, index);
 		int wombo = user_input.find(pipes, index);
 		if(wtf >= 0 && (wtf < lamp || lamp == -1) && (wtf < melon || melon == -1) && (wtf < wombo || wombo ==-1))//adds spaces if semi colon found
 		{
@@ -97,16 +99,7 @@ void add_spaces(string& user_input)
 			it += user_input.find(in_re, index) +1;
 			index = user_input.find(in_re, index) +1;
 		}
-		else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp < melon || melon == -1) && (lamp < wombo || wombo == -1))//adds spaces if or connector found
-		{
-			user_input.insert(user_input.find(out_re, index), " ");
-		
-			user_input.insert(user_input.find(out_re, index)+1, " ");
-			it = user_input.begin();
-			it += user_input.find(out_re, index) + 1;
-			index = user_input.find(out_re, index) +1;
-		}
-		else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1) && (melon < wombo || wombo == -1))//adds spaces if and connector found
+		else if(lamp >= 0 && (lamp < wtf || wtf == -1) && (lamp <= melon || melon == -1) && (lamp < wombo || wombo == -1))//adds spaces if or connector found
 		{
 			user_input.insert(user_input.find(out_re2, index), " ");
 		
@@ -114,6 +107,15 @@ void add_spaces(string& user_input)
 			it = user_input.begin();
 			it += user_input.find(out_re2, index) + 2;
 			index = user_input.find(out_re2, index) +2;
+		}
+		else if(melon >= 0 && (melon < wtf || wtf == -1) && (melon < lamp || lamp == -1) && (melon < wombo || wombo == -1))//adds spaces if and connector found
+		{
+			user_input.insert(user_input.find(out_re, index), " ");
+		
+			user_input.insert(user_input.find(out_re, index)+1, " ");
+			it = user_input.begin();
+			it += user_input.find(out_re, index) + 1;
+			index = user_input.find(out_re, index) +1;
 		}
 		else if(wombo >= 0 && (wombo < wtf || wtf == -1) && (wombo < lamp || lamp == -1) && (wombo < melon || melon == -1))//adds spaces if and connector found
 		{
@@ -171,34 +173,58 @@ void tokenizer(string& conditional, char**& lol, char*& the_token, bool& redirec
 	}
 	lol = new_lol;
 }
-
-void redirectioner(string& conditional_re, char**& wolol, char** lol, bool& redirection, size_t& index_re)
+void trip_wire(string& trip, char**lol, size_t index_re)
 {
 	bool redir_flag = false;
-	char** wololo = (char**)malloc(BUFSIZ);
-	for(size_t i = index_re, j = 0; lol[i] != NULL && !redir_flag; i++, index_re++)
+	size_t i;
+	for(i = index_re; lol[i] != NULL && !redir_flag; i++, index_re++)
 	{
 		string hello = lol[i];
-		if(hello == out_re) conditional_re = out_re, wololo[j] = NULL, redir_flag = true;
-		else wololo[j] = lol[i], j++;
+		if(hello == out_re) trip = out_re, redir_flag = true;
+		else if(hello == out_re2) trip = out_re2, redir_flag = true;
+		else if(hello == in_re) trip = in_re, redir_flag = true;
+		else if(hello == pipes) trip = pipes, redir_flag = true;
 	}
-	wolol = wololo;
-	if(redir_flag == false) redirection = false;
 }
 
-vector<string> grab_files(char** lol, size_t index_re)
+void redirectioner(string& conditional_re, char**& wolol, char** lol, bool& redirection, size_t& index_re, size_t& exec_pos)
+{
+	bool redir_flag = false;
+	//char** wololo = (char**)malloc(BUFSIZ);
+	size_t i = index_re;
+	size_t j;
+	if(i > 0) j = 0;
+	else j = 1;
+	for( ; lol[i] != NULL && !redir_flag; i++, j++, index_re++)
+	{
+		string hello = lol[i];
+		cout << hello << endl;
+		if(j == 0);
+		else if(hello == out_re) conditional_re = out_re, wolol[exec_pos] = NULL, redir_flag = true;
+		else if(hello == out_re2) conditional_re = out_re2, wolol[exec_pos] = NULL, redir_flag = true;
+		else wolol[exec_pos] = lol[i], exec_pos++;
+	}
+	//wolol = wololo;
+	if(redir_flag == false) redirection = false, wolol[exec_pos - 1] = NULL;
+}
+
+vector<string> grab_files_out(char** lol, size_t index_re)
 {
 	vector<string> the_files;
 	bool redir_flag = false;
 	for(size_t i = index_re; lol[i] != NULL && !redir_flag; i++)
 	{
 		if((string)lol[i] == in_re || (string)lol[i] == out_re || (string)lol[i] == out_re2 || (string)lol[i] == pipes) redir_flag = true;
-		else the_files.push_back(lol[i]);
+		else
+		{
+			the_files.push_back(lol[i]);
+			break;
+		}
 	}
 	return the_files;
 }
 
-bool run_redir(string conditional, char** wolol, vector<string> files)
+bool run_redir_out(string conditional, char** wolol, vector<string> files)
 {
 	int fd[2];
 	if(-1 == pipe(fd)) perror("pipe"), exit(1);
@@ -207,23 +233,32 @@ bool run_redir(string conditional, char** wolol, vector<string> files)
 		int id = -1;
 		if(conditional == ">")
 		{
-			id = open(files.at(u).c_str(), O_WRONLY| O_CREAT, 00664);
+			id = open(files.at(u).c_str(), O_WRONLY | O_CREAT | O_TRUNC, 00664);
+			cout << id << endl;
+		}
+		else if(conditional == ">>")
+		{
+			id = open(files.at(u).c_str(), O_WRONLY | O_CREAT | O_APPEND, 00664);
 			cout << id << endl;
 		}
 		int pid = fork();
 		if (pid == 0){
 			close(1);
 			dup(id);// was closed, but now assign fd[1] to the file descriptor that was closed
-			execvp(wolol[0], wolol);
+			if(-1 == execvp(wolol[0], wolol))
+			{
+				perror("execvp");
+				exit(1);
+			}
 		}
 		else if(pid > 0){
 			wait(0);
 			close(id);
 			close(0);
 			dup(fd[0]);
+			close(fd[0]);
 		}
 	}
-	close(fd[0]);
 	return true;
 }
 
@@ -268,9 +303,9 @@ bool run_execvp(char** arg)
 
 int main(int argc, char* argv[])
 {
-	int descrip_in = dup(0);
+	descrip_in = dup(0);
 	if(descrip_in == -1) perror("dup"), exit(1);
-	int descrip_out = dup(1);
+	descrip_out = dup(1);
 	if(descrip_out == -1) perror("dup"), exit(1);
 	while(cin.good())		//whenever there is a system call remember to have perror
 	{
@@ -291,7 +326,6 @@ int main(int argc, char* argv[])
 			{
 				bool redirection = false;
 				tokenizer(condition, lol, token,redirection); //parses char** as commands, lol is the command, condition is the connector
-				char** lol_1;
 				string condition_re;
 				size_t index_re = 0;
 				//if(redirection) lol_1 = lol;//check if leak
@@ -343,14 +377,42 @@ int main(int argc, char* argv[])
 				}
 				while(redirection)
 				{
-					char** wolol;
-					redirectioner(condition_re, wolol, lol, redirection, index_re);
-					vector<string> files = grab_files(lol, index_re);
-					bool a = run_redir(condition_re, wolol, files);
-					redirection = false;
+					string trip;
+					trip_wire(trip, lol, index_re);
+					char** wolol = (char**)malloc(BUFSIZ);
+					size_t exec_pos = index_re;
+					while(redirection)
+					{
+						size_t index_re_copy = index_re;
+						redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos);
+						vector<string> files;
+						if(trip == out_re || trip == out_re2)
+						{
+							if(condition_re == out_re || condition_re == out_re2)
+							{
+								files = grab_files_out(lol, index_re_copy);
+								run_redir_out(condition_re, wolol, files);
+								index_re = index_re_copy;
+							}
+							else break;
+						}
+						else if(trip == in_re)
+						{
+							if(conditon_re == in_re)
+							{
+								files = grab_files_in(lol, index_re_copy);
+								run_redir_in(wolol, files);
+								index_re = index_re_copy;
+							}
+							else break;
+						}
+						else if(condition == in_re);
+						
+					}
+					free(wolol);
+					dup2(descrip_in, 0);
+					dup2(descrip_out, 1);
 				}
-				dup2(descrip_in, 0);
-				dup2(descrip_out, 1);
 			}
 			break;
 		}
