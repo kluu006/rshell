@@ -277,7 +277,7 @@ void pipe_er(string& conditional_re, char**& wolol, char** lol, bool& redirectio
 	if(redir_flag == false)
 	{
 		redirection = false;
-		if(pipe_pos > 0) wolol[pipe_pos] = NULL;
+		if(pipe_pos > 0) wolol[pipe_pos-1] = NULL;
 		else wolol[0] = NULL;
 	}
 }
@@ -355,30 +355,21 @@ bool run_redir_out(string conditional, char** wolol, vector<string> files)
 bool run_redir_in_out(string dolol, char** polol, string conditional, string file)
 {
 	int kid;
-	//i am a homosexual
-	//cout << dolol << endl;
-	//cout << polol[0] << endl;
-	//cout << file << endl;
 	int ID = open(dolol.c_str(), O_RDONLY);
 	//cout << dolol << endl;
 	if(conditional == ">")
 	{
-		//cout << "fuck shit up" << endl;
 		kid = open(file.c_str(), O_RDWR | O_CREAT | O_TRUNC, 00664);
-		//cout << kid << endl;
-		//cout << ID << endl;
 	}
 	else if(conditional == ">>")
 	{
 		kid = open(file.c_str(), O_RDWR | O_CREAT | O_APPEND, 00664);
-		//cout << kid << endl;
 	}
 	dup2(ID, 0);
 	dup2(kid, 1);
 	int pid = fork();
 	if(pid == 0)
 	{
-		//cerr << "hello" << endl;
 		execvp(polol[0], polol);
 	}
 	if(pid > 1)
@@ -389,23 +380,42 @@ bool run_redir_in_out(string dolol, char** polol, string conditional, string fil
 		dup2(descrip_in, 0);
 		dup2(descrip_out, 1);
 	}
-	/*
-	//close(1);
-	dup(ID);
-	char a[BUFSIZ];
-	int r = 0;
-	//read(ID, a , BUFSIZ);
-	//r = read(ID, &a, BUFSIZ);
-	while((r = read(ID, &a, BUFSIZ)) > 0)
-	{
-		if(-1==write(kid, a , BUFSIZ)) perror("write");
-	}
-	close(ID);
-	close(kid);
-	*/
 	return true;
 }
+bool run_redir_pipe_out(string conditional, char** polol, vector<string> files, int* fd)
+{
+								cout << *polol << endl;
+	string file = files.at(0);
+	cout << files.at(0) << endl << files.at(0) << endl;
+	int kid;
+	if(conditional == ">")
+	{
+		kid = open(file.c_str(), O_RDWR | O_CREAT | O_TRUNC, 00664);
+	}
+	else if(conditional == ">>")
+	{
+		kid = open(file.c_str(), O_RDWR | O_CREAT | O_APPEND, 00664);
+	}
+	//dup2(fd[0], 0);
+	dup2(kid, 1);
+	int pid = fork();
+	if(pid == 0)
+	{
+		execvp(polol[0], polol);
+	}
+	if(pid > 1)
+	{
+		//close(ID);
+		close(fd[1]);
+		close(kid);
+		wait(0);
+		close(fd[0]);
+		dup2(descrip_in, 0);
+		dup2(descrip_out, 1);
+	}
+	return true;
 
+}
 bool run_redir_in(char** wolol, string files)
 {
 	//int fd[2];
@@ -427,16 +437,11 @@ bool run_redir_in(char** wolol, string files)
 	else if(pid > 0){
 		wait(0);
 		close(ID);
-		//dup2(descrip_in, 0);
-		//close(fd[0]);
-		//close(fd[1]);
-		//close(1);
-		//dup(fd[1]);
 	}
 	return true;
 
 }
-
+/*
 bool run_pipe_before(char** wolol, int* fd)
 {
 	int pid = fork();
@@ -450,37 +455,58 @@ bool run_pipe_before(char** wolol, int* fd)
 		close(fd[1]);
 	}
 	return true;	
-}
+}*/
 
-bool run_pipe_after(char** wolol, int* fd, bool redirection)
+bool run_pipe_after(char** wolol, int* fd)
 {
-	if(redirection)
-	{
-		int pid = fork();
-		if (pid == 0){
-			close(1);
-			dup(fd[1]);
-			execvp(wolol[0], wolol);
-		}
-		else if(pid > 0){
-			wait(0);
-			close(fd[1]);
-		}
+	int status;
+	int pid = fork();
+	if (pid == 0){
+		close(1);
+		dup(fd[1]);
+		close(fd[0]);
+		execvp(wolol[0], wolol);
 	}
-	else
-	{
-		int pid = fork();
-		if (pid == 0){
-			close(0);
-			dup(fd[0]);
-			execvp(wolol[0], wolol);
-		}
-		else if(pid > 0){
-			wait(0);
-			close(fd[0]);
-		}
+	else if(pid > 0){
+		wait(&status);
+		close(0);
+		dup2(fd[0], 0);
+		close(fd[1]);
 	}
+	/*
+	int pid_2 = fork();
+	if (pid_2 == 0){
+		close(0);
+		dup(fd[0]);
+		execvp(wolol[0], wolol);
+	}
+	else if(pid_2 > 0){
+		wait(0);
+		close(fd[0]);
+	}*/
 	return true;
+}
+void run_pipe_end(char** wolol)
+{
+	int statuz = 0;
+	int pid_pipe = fork();
+	if(pid_pipe == 0)
+	{
+		if(-1 == execvp(wolol[0], wolol))
+		{
+			perror("execvp");
+			exit(1);
+		}
+	}
+	else if(pid_pipe > 0)
+	{
+		wait(&statuz);
+		if(WEXITSTATUS(statuz) == 0)
+		{
+			dup2(descrip_in, 0);
+			dup2(descrip_out, 1);
+		}
+	}
 }
 bool run_execvp(char** arg)
 {
@@ -614,15 +640,15 @@ int main(int argc, char* argv[])
 				string trip;
 				size_t cat_size = 0;
 				vector<string> redir_parse = trip_wire(trip, lol, index_re, cat_size);
-				int file_d[2];
-				if(-1 == pipe(file_d)) perror("pipe"), exit(1);
+				//int file_d[2];
+				//if(-1 == pipe(file_d)) perror("pipe"), exit(1);
 				while(redirection)
 				{
 					//trip_wire(trip, lol, index_re, cat_size);
 					if(trip != condition_re) redir_parse = trip_wire(trip, lol, index_re, cat_size);
 					char** wolol = (char**)malloc(BUFSIZ);
 					size_t exec_pos = index_re;
-					int counter = 0;
+					//int counter = 0;
 					int counters = 0;
 					while(redirection)
 					{
@@ -632,8 +658,10 @@ int main(int argc, char* argv[])
 						bool in_out = false;
 						bool out_in = false;
 						bool one_way = true;
+						bool not_all_pipes = false;
 						size_t k;
 						vector<string> files;
+						size_t num_pipes = 1;
 						for(k = 1; k < redir_parse.size(); k++)
 						{
 							if(same != redir_parse.at(k))
@@ -650,9 +678,72 @@ int main(int argc, char* argv[])
 									out_in = true;
 									break;
 								}
+								else if(same == pipes)
+								{
+									one_way = false;
+									not_all_pipes = true;
+									break;
+								}
 							}
+							else if(same == pipes) num_pipes++;
 						}
-						if(out_in)
+						if(not_all_pipes)
+						{
+							char** polol;
+							//cout << num_pipes << endl;
+							while(redirection && num_pipes > 0)
+							{
+								int file_d [2];
+								if(num_pipes == 0);
+								else
+								{
+									if(-1 == pipe(file_d)) perror("pipe"), exit(1);
+								}
+								pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+								//run_pipe_before(wolol, file_d), counter++;
+								if(num_pipes != 0)
+								{
+									run_pipe_after(wolol, file_d);
+									num_pipes = num_pipes -1;
+									//cout << num_pipes << endl;
+								}
+								if(num_pipes == 0)
+								{
+									//dup2(descrip_out, 1);
+									pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+									polol = wolol;
+									//redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+									files = grab_files_out(lol, index_re_copy);
+
+									run_redir_pipe_out(condition_re, polol, files, file_d);
+								}
+								//else break;
+								//cout << condition_re << endl;
+								index_re = index_re_copy;
+							}
+							//redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+
+							//cout << redirection << endl << condition_re << endl;
+							/*while(redirection && (condition_re == out_re || condition_re == out_re2))
+							{
+								//cout << *polol << endl;
+								files = grab_files_out(lol, index_re_copy);
+								run_redir_pipe_out(condition_re, polol, files);
+								if(files.size() == 0 && counters != 0) cerr << "No input" << endl;
+								redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+								index_re = index_re_copy;
+
+
+							}*/
+							if(condition_re == in_re)
+							{
+								cerr << "wtf wrong input" << endl;
+							}
+							redirection = false;
+							break;
+
+						}
+						else if(out_in)
 						{
 							vector<string> oo;
 							vector<string> boo;
@@ -715,10 +806,11 @@ int main(int argc, char* argv[])
 						else if(one_way)
 						{
 
-							if(trip != pipes) redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
-							else if(trip == pipes) pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+							//if(trip != pipes) redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+							//else if(trip == pipes) pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
 							if(trip == out_re || trip == out_re2)
 							{
+								redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
 								if(condition_re == out_re || condition_re == out_re2)
 								{
 									files = grab_files_out(lol, index_re_copy);
@@ -731,6 +823,7 @@ int main(int argc, char* argv[])
 							}
 							else if(trip == in_re)
 							{
+								redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
 								
 								if(condition_re == in_re)
 								{
@@ -756,21 +849,27 @@ int main(int argc, char* argv[])
 							}
 							else if(trip == pipes)
 							{
-								if(condition_re == pipes)
+								while(redirection && num_pipes > 1)
 								{
-									//cout << redirection << endl;
-									//counter ++;
-									if(counter == 0) run_pipe_before(wolol, file_d), counter++;
-									else run_pipe_after(wolol, file_d, redirection), counter ++, cout << "kekekek" << endl;
+									int file_d [2];
+									if(num_pipes == 0);
+									else
+									{
+										if(-1 == pipe(file_d)) perror("pipe"), exit(1);
+									}
+									pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+									//run_pipe_before(wolol, file_d), counter++;
+									if(num_pipes != 1) run_pipe_after(wolol, file_d); num_pipes--;
+									if(num_pipes == 1) dup2(descrip_out, 1), pipe_er(condition_re, wolol, lol, redirection, index_re_copy), run_pipe_end(wolol);
+									//else break;
 									index_re = index_re_copy;
 								}
-								else break;
 							}
 							//else if(condition == in_re);
 						}
 						
 					}
-					cout << "111" << endl;
+					//cout << "111" << endl;
 					free(wolol);
 					dup2(descrip_in, 0);
 					dup2(descrip_out, 1);
