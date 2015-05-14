@@ -267,9 +267,9 @@ void pipe_er(string& conditional_re, char**& wolol, char** lol, bool& redirectio
 	{
 		hello = lol[i];
 		//cout << hello << endl;
-		if(hello == out_re) conditional_re = out_re, redir_flag = true;
-		else if(hello == out_re2) conditional_re = out_re2, redir_flag = true;
-		else if(hello == in_re) conditional_re = in_re, redir_flag = true;
+		if(hello == out_re) conditional_re = out_re, wolol[pipe_pos] = NULL, redir_flag = true;
+		else if(hello == out_re2) conditional_re = out_re2, wolol[pipe_pos] = NULL, redir_flag = true;
+		else if(hello == in_re) conditional_re = in_re, wolol[pipe_pos] = NULL, redir_flag = true;
 		else if(hello == pipes) conditional_re = pipes, wolol[pipe_pos] = NULL, redir_flag = true;
 		else wolol[pipe_pos] = lol[i];
 	}
@@ -384,7 +384,7 @@ bool run_redir_in_out(string dolol, char** polol, string conditional, string fil
 }
 bool run_redir_pipe_out(string conditional, char** polol, vector<string> files, int* fd)
 {
-								cout << *polol << endl;
+			//					cout << *polol << endl;
 	string file = files.at(0);
 	cout << files.at(0) << endl << files.at(0) << endl;
 	int kid;
@@ -645,7 +645,8 @@ int main(int argc, char* argv[])
 				while(redirection)
 				{
 					//trip_wire(trip, lol, index_re, cat_size);
-					if(trip != condition_re) redir_parse = trip_wire(trip, lol, index_re, cat_size);
+					redir_parse = trip_wire(trip, lol, index_re, cat_size);
+					cout << "safe" << endl;
 					char** wolol = (char**)malloc(BUFSIZ);
 					size_t exec_pos = index_re;
 					//int counter = 0;
@@ -687,6 +688,7 @@ int main(int argc, char* argv[])
 							}
 							else if(same == pipes) num_pipes++;
 						}
+
 						if(not_all_pipes)
 						{
 							char** polol;
@@ -721,7 +723,7 @@ int main(int argc, char* argv[])
 								//cout << condition_re << endl;
 								index_re = index_re_copy;
 							}
-							//redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+							redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
 
 							//cout << redirection << endl << condition_re << endl;
 							/*while(redirection && (condition_re == out_re || condition_re == out_re2))
@@ -735,11 +737,12 @@ int main(int argc, char* argv[])
 
 
 							}*/
+							index_re = index_re_copy;
 							if(condition_re == in_re)
 							{
 								cerr << "wtf wrong input" << endl;
+								redirection = false;
 							}
-							redirection = false;
 							break;
 
 						}
@@ -851,6 +854,7 @@ int main(int argc, char* argv[])
 							{
 								while(redirection && num_pipes > 1)
 								{
+							cout << "not_safe" << endl;
 									int file_d [2];
 									if(num_pipes == 0);
 									else
