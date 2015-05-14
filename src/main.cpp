@@ -277,7 +277,7 @@ void pipe_er(string& conditional_re, char**& wolol, char** lol, bool& redirectio
 	if(redir_flag == false)
 	{
 		redirection = false;
-		if(pipe_pos > 0) wolol[pipe_pos-1] = NULL;
+		if(pipe_pos > 0) wolol[pipe_pos] = NULL;
 		else wolol[0] = NULL;
 	}
 }
@@ -508,6 +508,24 @@ void run_pipe_end(char** wolol)
 		}
 	}
 }
+bool run_lonely_pipe(char** wolol)
+{
+	int pid = fork();
+	if(pid == 0)
+	{
+		if(-1 == execvp(wolol[0], wolol))
+		{
+			perror("execvp");
+			exit(1);
+		}
+
+	}
+	else if(pid > 0)
+	{
+		wait(0);
+	}
+	return true;
+}
 bool run_execvp(char** arg)
 {
 	int status = 0;
@@ -655,7 +673,8 @@ int main(int argc, char* argv[])
 					{
 						size_t index_re_copy = index_re;
 						string same;
-						same = redir_parse.at(0);
+						if(redir_parse.size() != 0)
+							same = redir_parse.at(0);
 						bool in_out = false;
 						bool out_in = false;
 						bool one_way = true;
@@ -683,6 +702,7 @@ int main(int argc, char* argv[])
 								{
 									one_way = false;
 									not_all_pipes = true;
+									cout << "asdsa" << endl;
 									break;
 								}
 							}
@@ -723,7 +743,7 @@ int main(int argc, char* argv[])
 								//cout << condition_re << endl;
 								index_re = index_re_copy;
 							}
-							redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+							//redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
 
 							//cout << redirection << endl << condition_re << endl;
 							/*while(redirection && (condition_re == out_re || condition_re == out_re2))
@@ -852,9 +872,14 @@ int main(int argc, char* argv[])
 							}
 							else if(trip == pipes)
 							{
+								if(redir_parse.size() == 0)
+								{
+									redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+									run_lonely_pipe(wolol);
+
+								}
 								while(redirection && num_pipes > 1)
 								{
-							cout << "not_safe" << endl;
 									int file_d [2];
 									if(num_pipes == 0);
 									else
@@ -873,7 +898,8 @@ int main(int argc, char* argv[])
 						}
 						
 					}
-					//cout << "111" << endl;
+					cout << "111" << endl;
+
 					free(wolol);
 					dup2(descrip_in, 0);
 					dup2(descrip_out, 1);
