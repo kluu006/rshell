@@ -190,10 +190,10 @@ vector<string> trip_wire(string& trip, char**lol, size_t index_re, size_t& cat_s
 	for(i = index_re; lol[i] != NULL; i++, index_re++)
 	{
 		string hello = lol[i];
-		if(hello == out_re) trip = out_re, redir_flag = true, redir.push_back(out_re);
+		if(hello == out_re) redir_flag = true, redir.push_back(out_re);
 		else if(hello == out_re2) trip = out_re2, redir_flag = true, redir.push_back(out_re2);
-		else if(hello == in_re) trip = in_re, redir_flag = true, redir.push_back(in_re);
-		else if(hello == pipes) trip = pipes, redir_flag = true, redir.push_back(pipes);
+		else if(hello == in_re) redir_flag = true, redir.push_back(in_re);
+		else if(hello == pipes) redir_flag = true, redir.push_back(pipes);
 		if(!redir_flag)cat_size++;
 	}
 	if(lol[i] == NULL && redir.size() != 0) redir.push_back(redir.at(redir.size()-1));
@@ -255,9 +255,13 @@ void redirectioner(string& conditional_re, char**& wolol, char** lol, bool& redi
 		exec_pos = 0;
 	}
 }
-
+///////////////////////////////////////////////
+///////////////////////////////////////////////
+///////////////////////////////////////////////
+////////////////do null checking for this//////
 void pipe_er(string& conditional_re, char**& wolol, char** lol, bool& redirection, size_t& index_re)
 {
+	if(lol[index_re] != NULL && (lol[index_re] == out_re || lol[index_re] == out_re2 || lol[index_re] == in_re || lol[index_re] == pipes)) redirection = false, cerr << "Not valid" << endl;
 	bool redir_flag = false;
 	//char** wololo = (char**)malloc(BUFSIZ);
 	size_t i = index_re;
@@ -508,6 +512,32 @@ void run_pipe_end(char** wolol)
 		}
 	}
 }
+bool run_in_pipe(char**polol, string file, int* fd)
+{
+	int ID = open(file.c_str(), O_RDONLY);
+	int status;
+	int pid = fork();
+	if (pid == 0){
+		close(0);
+		dup(ID);
+		close(1);
+		dup(fd[1]);
+		close(fd[0]);
+		if(-1 == execvp(polol[0], polol))
+		{
+			perror("execvp");
+			exit(1);
+		}
+	}
+	else if(pid > 0){
+		wait(&status);
+		close(ID);
+		//close(0);
+		dup2(fd[0], 0);
+		close(fd[1]);
+	}
+	return true;
+}
 bool run_lonely_pipe(char** wolol)
 {
 	int pid = fork();
@@ -526,12 +556,13 @@ bool run_lonely_pipe(char** wolol)
 	}
 	return true;
 }
-bool run_execvp(char** arg)
+bool run_execvp(char** arg, bool& koo)
 {
 	int status = 0;
 	if(*arg == NULL)
 	{
-		free(arg);
+		koo = true;
+		//free(arg);
 		return false;
 	}
 	int pid = fork();
@@ -601,6 +632,7 @@ int main(int argc, char* argv[])
 			bool prev_and = true;
 			while(token != NULL)
 			{
+				bool koo = false;
 				bool redirection = false;
 				tokenizer(condition, lol, token,redirection); //parses char** as commands, lol is the command, condition is the connector
 				string condition_re;
@@ -619,7 +651,7 @@ int main(int argc, char* argv[])
 							prev_and = true;	//case where previous condition was AND and that it failed the previous condition
 							prev_or = false;
 						}
-						else if(run_execvp(lol) == true)	//current statement is true
+						else if(run_execvp(lol, koo) == true)	//current statement is true
 						{
 							if(token != NULL)
 								prev_or = true;		//sets to know that the previous condition under OR is true
@@ -634,7 +666,7 @@ int main(int argc, char* argv[])
 							prev_and = true;
 							prev_or = false;
 						}
-						else if(run_execvp(lol) == false)	//current statement is false
+						else if(run_execvp(lol, koo) == false)	//current statement is false
 						{
 							if(token != NULL)
 								prev_and = false;
@@ -645,15 +677,16 @@ int main(int argc, char* argv[])
 					{
 						if(!prev_or && prev_and)
 						{
-							if(run_execvp(lol));	//runs if previous or was false and if previous and was true
+							if(run_execvp(lol, koo));	//runs if previous or was false and if previous and was true
 						}
 						else free(lol);
 						prev_or = false;	//resets conditions for passing exec
 						prev_and = true;
 					}
 					else
-						if(run_execvp(lol));
+						if(run_execvp(lol, koo));
 					//free(lol);	//remember to delete char** at end of command to prevent memory leaks
+					if(koo) free(lol);
 				}
 				string trip;
 				size_t cat_size = 0;
@@ -664,7 +697,7 @@ int main(int argc, char* argv[])
 				{
 					//trip_wire(trip, lol, index_re, cat_size);
 					redir_parse = trip_wire(trip, lol, index_re, cat_size);
-					cout << "safe" << endl;
+					if(redir_parse.size() != 0 )trip = redir_parse.at(0);
 					char** wolol = (char**)malloc(BUFSIZ);
 					size_t exec_pos = index_re;
 					//int counter = 0;
@@ -677,8 +710,9 @@ int main(int argc, char* argv[])
 							same = redir_parse.at(0);
 						bool in_out = false;
 						bool out_in = false;
-						bool one_way = true;
 						bool not_all_pipes = false;
+						bool in_pipes = false;
+						bool one_way = true;
 						size_t k;
 						vector<string> files;
 						size_t num_pipes = 1;
@@ -705,10 +739,89 @@ int main(int argc, char* argv[])
 									cout << "asdsa" << endl;
 									break;
 								}
+								else if(same == in_re && pipes == redir_parse.at(k))
+								{
+									one_way = false;
+									in_pipes = true;
+									for(size_t ko = k; redir_parse.at(ko) == pipes &&  ko < redir_parse.size() -1 ; ko++)
+									{
+										num_pipes++;
+									}
+									break;
+								}
+								else if(same == pipes && in_re == redir_parse.at(k))
+								{
+									break;
+								}
+
+								//out redirection into pipe, probably just an error, or dont do anything with output file
 							}
 							else if(same == pipes) num_pipes++;
 						}
+						if(in_pipes)
+						{
+							vector<string> oo;
+							vector<string> boo;
+							size_t v = 0;
+							char** polol;
+							size_t copy_copy;
+							while((condition_re != pipes) && redirection)
+							{
+								//exec_pos = 0;
+								copy_copy = index_re_copy;
+								redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
+								if(condition_re != pipes)
+								{
+									boo = grab_files_in(lol, index_re_copy);
+									for(size_t pl = 0; pl < boo.size(); pl++)
+									{
+										//cout << boo.at(pl) << endl << endl;
+										oo.push_back(boo.at(pl));
+									}
+								}
+								else index_re_copy = copy_copy;
+								//index_re = exec_pos;
+								//cout << v << endl << *wolol << endl;
+								if(v == 0) polol = wolol;
+								//if(v == 1) dolol = wolol;
+								v++;
+							}
+							int do_only_once = 1;
+							while(num_pipes > 1)
+							{
+								int file_d [2];
+								if(num_pipes == 0);
+								else
+								{
+									if(-1 == pipe(file_d)) perror("pipe"), exit(1);
+								}
+								if(do_only_once != 1) pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+								//pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+								//run_pipe_before(wolol, file_d), counter++;
+								if(do_only_once == 1)
+								{
+									run_in_pipe(polol, boo.at(boo.size()- 1), file_d);
+									//num_pipes--;
+								}
+								if(do_only_once != 1 && num_pipes != 1) run_pipe_after(wolol, file_d), num_pipes--;
+								if(num_pipes == 1)
+								{
+									//pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+									dup2(descrip_out, 1), 
+									pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+									run_pipe_end(wolol);
+								}
+								//else break;
+								do_only_once = 0;
+								index_re = index_re_copy;
+							}
+							//cout << "out ehere" << endl;
+							break;
+							//cout << redirection << endl;
+							//redirection = false;
 
+							
+						}
 						if(not_all_pipes)
 						{
 							char** polol;
@@ -875,7 +988,7 @@ int main(int argc, char* argv[])
 								if(redir_parse.size() == 0)
 								{
 									redirectioner(condition_re, wolol, lol, redirection, index_re_copy, exec_pos, cat_size);
-									run_lonely_pipe(wolol);
+									if(redirection) run_lonely_pipe(wolol);
 
 								}
 								while(redirection && num_pipes > 1)
@@ -898,7 +1011,7 @@ int main(int argc, char* argv[])
 						}
 						
 					}
-					cout << "111" << endl;
+					//cout << "111" << endl;
 
 					free(wolol);
 					dup2(descrip_in, 0);
