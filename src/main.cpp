@@ -24,7 +24,7 @@ int descrip_out;
 void display_name()
 {
 	char* login = getlogin();
-	if(!getlogin()) //displays the username
+	if(login == NULL) //displays the username
 		perror("getlogin");
 	//char log[BUFSIZ];
 	//getlogin_r(log, BUFSIZ);
@@ -339,6 +339,10 @@ bool run_redir_out(string conditional, char** wolol, vector<string> files)
 			}
 		}
 		int pid = fork();
+		if(pid == -1){
+			perror("fork");
+			exit(1);
+		}
 		if (pid == 0){
 			if(-1 == close(1)) perror("close"), exit(1);
 			if(-1 == dup(id)) perror("dup"), exit(1);

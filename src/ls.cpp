@@ -251,7 +251,7 @@ void run_a(bool show_p, const char* directory, bool print)
 	if(hello.size() != 0 && print)
 		cout << directory << ":" << endl;
 	struct winsize WIN;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &WIN);
+	if(-1 == ioctl(STDOUT_FILENO, TIOCGWINSZ, &WIN)) perror("ioctl"), exit(1);
 	size_t width = set_width(hello);
 	int k = 0;
 	size_t terminal = WIN.ws_col -2;
@@ -444,7 +444,7 @@ void run_R(bool show_p, const char* directory, bool show_l)
 		if(show_l) total_size(show_p, hello, directory, kek);
 	}
 	struct winsize WIN;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &WIN);
+	if(-1 == ioctl(STDOUT_FILENO, TIOCGWINSZ, &WIN)) perror("ioctl"), exit(1);
 	size_t width = set_width(hello);
 	int k = 0;
 	size_t terminal = WIN.ws_col - 2;
