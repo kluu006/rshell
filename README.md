@@ -10,10 +10,19 @@ The connector `;` will run any command if the command is true.
 
 Running the command `true` will return true. Running the command `false` will return false.
 
+Rshell supports I/O redirection and piping using `<`, `>`, `>>`, and `|`.
+
+If I/O redirection or pipe symbol is the first instance, it will throw an error for wrong syntax.
+
+
+For I/O redirection and piping, connector logic does not matter. They will always run even if the first part is true and I/O redirection or piping is after a `&&`. Some for the other logic.
+
 **EDGE CASES:**
 Having an empty command returns false. There is no error output.
 
 Comments are marked as `#`. Anything after the comment will not be ran.
+
+Having an empty pipe throws an error for wrong syntax.
 
 # ls
 
@@ -40,7 +49,7 @@ If all flags are neither `-a -l -R`, then it is simply executed as normal ls wit
 ```
 $git clone https://github.com/kluu006/rshell.git
 $cd rshell
-$git checkout hw1
+$git checkout hw2
 $make
 $bin/rshell
 $bin/ls
@@ -51,6 +60,11 @@ $bin/ls
 ```
 Echo with quotes will not work as expected.
 echo can output standard in; however, cannot write to a file with quotations.
+Quotes do not work in general.
+Does not have the option for changing file descriptors.
+Does not do <<<.
+There are probably more bugs I haven't found.
+Cannot have input redirection after piping, but it can work if input redirection is before piping.
 
 ```
 ## Bugs / Limitations for ls
