@@ -1,0 +1,657 @@
+Script started on Sun 17 May 2015 09:48:55 PM PDT
+~
+kluu006@hammer $ cs100
+[0;91m
+===============================================================================
+|                                                                             |
+| You have enabled settings specific for cs100.  Everything you do is being   |
+| recorded to measure your progress in the class.                             |
+|                                                                             |
+| Important commands for the class:                                           |
+|   * calcgrade.sh          displays a detailed breakdown of your grade       |
+|   * checksyscalls.sh      is your cpp file doing proper error checking?     |
+|   * typespeed             practice typing unix commands                     |
+|                                                                             |
+| Important commands for general C++ programming:                             |
+|   * make                  don't call g++ manually; let make do the work!    |
+|   * gdb                   the GNU debugger                                  |
+|   * valgrind              get rid of your memory leaks                      |
+|   * cppcheck              static analysis tool                              |
+|   * man                   find help about any syscall / terminal command    |
+|                                                                             |
+===============================================================================
+[0m
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m ls
+C:\nppdf32Log\debuglog.txt  Documents  ex3.asm		      kluu006.tar.gz  lab4	  Music      Templates
+cs100_stuff		    Downloads  ex4.asm		      lab2.cpp	      lab5.1.asm  Pictures   Videos
+data.txt		    ex1.asm    Firefox_wallpaper.png  lab2.tgz	      lab5.2.asm  Public
+Desktop			    ex2.asm    get		      lab3	      lab8	  README.md
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cdD[K Desktop/water/
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/water[0;95m (master) [0;36m$[0m cd rshell/
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/water/rshell[0;95m (redirect) [0;36m$[0m ls
+LICENSE  Makefile  README.md  src  tests
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/water/rshell[0;95m (redirect) [0;36m$[0m make
+mkdir -p ./bin
+g++ -std=c++0x -pedantic -Wall -Werror ./src/main.cpp -o ./bin/rshell
+g++ -std=c++0x -pedantic -Wall -Werror ./src/ls.cpp -o ./bin/ls
+g++  ./src/cp.cpp -o ./bin/cp
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/water/rshell[0;95m (redirect) [0;36m$[0m bin/rshell
+kluu006@hammer.cs.ucr.edu:$ #ge  hello
+kluu006@hammer.cs.ucr.edu:$ ls
+bin  LICENSE  Makefile	README.md  src	tests
+kluu006@hammer.cs.ucr.edu:$ ech   #input
+kluu006@hammer.cs.ucr.edu:$ # cat < Makefile
+COMPILER = g++
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+RESULT = ./bin/rshell
+DIRECTORY = ./src/main.cpp
+all:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CLFAGS) ./src/cp.cpp -o ./bin/cp
+
+rshell:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+ls:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+cp:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) ./src/cp.cpp -o ./bin/cp
+clean:
+	rm -rf ./bin
+kluu006@hammer.cs.ucr.edu:$ cat ma  Makfile
+cat: Makfile: No such file or directory
+kluu006@hammer.cs.ucr.edu:$ cat a Makefile
+COMPILER = g++
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+RESULT = ./bin/rshell
+DIRECTORY = ./src/main.cpp
+all:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CLFAGS) ./src/cp.cpp -o ./bin/cp
+
+rshell:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+ls:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+cp:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) ./src/cp.cpp -o ./bin/cp
+clean:
+	rm -rf ./bin
+kluu006@hammer.cs.ucr.edu:$ cat < momoomoomomoom
+Not an input file: No such file or directory
+kluu006@hammer.cs.ucr.edu:$ cat     , <    mooomomommo
+Not an input file: No such file or directory
+kluu006@hammer.cs.ucr.edu:$        cat    <    momomomoo
+Not an input file: No such file or directory
+kluu006@hammer.cs.ucr.edu:$ sort - <<  bin   Makefile
+
+all:
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+clean:
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) ./src/cp.cpp -o ./bin/cp
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CLFAGS) ./src/cp.cpp -o ./bin/cp
+COMPILER = g++
+cp:
+DIRECTORY = ./src/main.cpp
+ls:
+	mkdir -p ./bin
+	mkdir -p ./bin
+	mkdir -p ./bin
+	mkdir -p ./bin
+RESULT = ./bin/rshell
+	rm -rf ./bin
+rshell:
+kluu006@hammer.cs.ucr.edu:$             sort           M   <    Makfile
+Not an input file: No such file or directory
+kluu006@hammer.cs.ucr.edu:$            sort       M     <           Makefile
+
+all:
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+clean:
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) ./src/cp.cpp -o ./bin/cp
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CLFAGS) ./src/cp.cpp -o ./bin/cp
+COMPILER = g++
+cp:
+DIRECTORY = ./src/main.cpp
+ls:
+	mkdir -p ./bin
+	mkdir -p ./bin
+	mkdir -p ./bin
+	mkdir -p ./bin
+RESULT = ./bin/rshell
+	rm -rf ./bin
+rshell:
+kluu006@hammer.cs.ucr.edu:$ tail             < ma           mak   Makfile       README.md
+## Bugs / Limitations for ls
+
+```
+When running -R, an extra new line is at the bottom; it was put in recursively.
+When opening or closing a directory, there are extra blank lines outputted.
+
+```
+##Licensing
+
+Licensing can be found [here](/LICENSE).
+kluu006@hammer.cs.ucr.edu:$               tail<README.md
+## Bugs / Limitations for ls
+
+```
+When running -R, an extra new line is at the bottom; it was put in recursively.
+When opening or closing a directory, there are extra blank lines outputted.
+
+```
+##Licensing
+
+Licensing can be found [here](/LICENSE).
+kluu006@hammer.cs.ucr.edu:$ sort<GARBAGE
+Not an input file: No such file or directory
+kluu006@hammer.cs.ucr.edu:$        sort <            < Maki  ke            makfi     Makfile     e  efile |  |      |      grep    grep a
+all:
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+clean:
+DIRECTORY = ./src/main.cpp
+kluu006@hammer.cs.ucr.edu:$          sort        <             Makefile     | g  g    grep a       a     | grep      grep c
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+clean:
+DIRECTORY = ./src/main.cpp
+kluu006@hammer.cs.ucr.edu:$ sort<Makefile|grep a|grep c
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+clean:
+DIRECTORY = ./src/main.cpp
+kluu006@hammer.cs.ucr.edu:$ sort <     Makefil                   <        Makefile      | asd12     3331
+execvp: No such file or directory
+kluu006@hammer.cs.ucr.edu:$ #onto p output
+kluu006@hammer.cs.ucr.edu:$ echo b hello busra  >    >  >            >                      hello      busra       >      new   cool_ 
+kluu006@hammer.cs.ucr.edu:$ cat < cool          cool
+hello busra
+kluu006@hammer.cs.ucr.edu:$ echo ,my   name is kenny    >> cool               >> c         cool
+kluu006@hammer.cs.ucr.edu:$ echo    cat cool
+hello busra
+,my name is kenny
+kluu006@hammer.cs.ucr.edu:$ ls
+bin  cool  LICENSE  Makefile  README.md  src  tests
+kluu006@hammer.cs.ucr.edu:$                 echo troll >    >c                      echo troll >  >cool
+kluu006@hammer.cs.ucr.edu:$ cat cool
+troll
+kluu006@hammer.cs.ucr.edu:$ cat                 echo              doll >  >>cool
+kluu006@hammer.cs.ucr.edu:$ cat cool
+troll
+doll
+kluu006@hammer.cs.ucr.edu:$ echo  soll                 >>cool
+kluu006@hammer.cs.ucr.edu:$ cat e cool
+troll
+doll
+soll
+kluu006@hammer.cs.ucr.edu:$ c echo sml            sl              >              cool
+kluu006@hammer.cs.ucr.edu:$ cat cool
+sl
+kluu006@hammer.cs.ucr.edu:$ echo    echo             echo zoo             >>                     zoo        >> coo          cool
+kluu006@hammer.cs.ucr.edu:$ cat < cool
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ cat<cool
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ ls
+bin  cool  LICENSE  Makefile  README.md  src  tests
+kluu006@hammer.cs.ucr.edu:$ eco ho      cat cool >> new_file
+kluu006@hammer.cs.ucr.edu:$ cat cool    < new)f  _file
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ cat          cool      >>          new_file
+kluu006@hammer.cs.ucr.edu:$ cat new_file
+sl
+zoo
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ cat coo   cool>>new_file
+kluu006@hammer.cs.ucr.edu:$ cat new_file
+sl
+zoo
+sl
+zoo
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ cat newf _file  >> t  troll_file
+kluu006@hammer.cs.ucr.edu:$ cat troll_file
+sl
+zoo
+sl
+zoo
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ ps
+  PID TTY          TIME CMD
+30088 pts/49   00:00:00 bash
+30218 pts/49   00:00:00 rshell
+35663 pts/49   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:$ cat                               troll_file>>j             >> j
+kluu006@hammer.cs.ucr.edu:$ cat j
+sl
+zoo
+sl
+zoo
+sl
+zoo
+kluu006@hammer.cs.ucr.edu:$ echo    echo hello < > j
+kluu006@hammer.cs.ucr.edu:$ echo j
+j
+kluu006@hammer.cs.ucr.edu:$ echo =      cat < j
+hello
+kluu006@hammer.cs.ucr.edu:$ echo trl                         ecgi    ho        trl  > j     J h j
+kluu006@hammer.cs.ucr.edu:$ cat j
+trl
+kluu006@hammer.cs.ucr.edu:$ #now to start piping
+kluu006@hammer.cs.ucr.edu:$ ls | ls
+bin   j        Makefile  README.md  tests
+cool  LICENSE  new_file  src	    troll_file
+kluu006@hammer.cs.ucr.edu:$ ls | grep t
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls | grep t | grep r
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls         | g           rep    grep    t |      grep      r
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls|grep   t|grep r
+troll_file
+kluu006@hammer.cs.ucr.edu:$        ls|ls|grep t
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$           pwd|grep c
+/home/csmajs/kluu006/Desktop/water/rshell
+kluu006@hammer.cs.ucr.edu:$ ls ||  grep c   t | ls | pwd | grep c |        grep r | tee new   kicks
+/home/csmajs/kluu006/Desktop/water/rshell
+kluu006@hammer.cs.ucr.edu:$ cat   < kicks
+/home/csmajs/kluu006/Desktop/water/rshell
+kluu006@hammer.cs.ucr.edu:$ #tee works
+kluu006@hammer.cs.ucr.edu:$ ls | grep t           l  s      | g    grep t   > 3
+kluu006@hammer.cs.ucr.edu:$ cat   < 3
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls            ls |           | grep i <<              grep i    >>33 
+kluu006@hammer.cs.ucr.edu:$ cat        cat   < 3
+tests
+troll_file
+bin
+kicks
+Makefile
+new_file
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls   pwd | grep c | ls             ls >> 3  3
+kluu006@hammer.cs.ucr.edu:$ cat 3
+tests
+troll_file
+bin
+kicks
+Makefile
+new_file
+troll_file
+3
+bin
+cool
+j
+kicks
+LICENSE
+Makefile
+new_file
+README.md
+src
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls|ls|ls|ls|grep t
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls|pwd|grep c
+/home/csmajs/kluu006/Desktop/water/rshell
+kluu006@hammer.cs.ucr.edu:$ pwd|ps|ls|tail
+cool
+j
+kicks
+LICENSE
+Makefile
+new_file
+README.md
+src
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$ pwd     | p      ps|ls      | tail
+cool
+j
+kicks
+LICENSE
+Makefile
+new_file
+README.md
+src
+tests
+troll_file
+kluu006@hammer.cs.ucr.edu:$ ls
+3    cool  kicks    Makefile  README.md  tests
+bin  j	   LICENSE  new_file  src	 troll_file
+kluu006@hammer.cs.ucr.edu:$ cat j
+trl
+kluu006@hammer.cs.ucr.edu:$ cat    cat < Makefile
+COMPILER = g++
+CFLAGS = -std=c++0x -pedantic -Wall -Werror
+RESULT = ./bin/rshell
+DIRECTORY = ./src/main.cpp
+all:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+	$(COMPILER) $(CLFAGS) ./src/cp.cpp -o ./bin/cp
+
+rshell:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -o $(RESULT)
+ls:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) ./src/ls.cpp -o ./bin/ls
+cp:
+	mkdir -p ./bin
+	$(COMPILER) $(CFLAGS) ./src/cp.cpp -o ./bin/cp
+clean:
+	rm -rf ./bin
+kluu006@hammer.cs.ucr.edu:$ cat  <   < Ma   Makefile| tr a-z A-z | tee rock | tr A-Z a-Z z | > this_file
+kluu006@hammer.cs.ucr.edu:$ cat rock
+COMPILER = G++
+CFLAGS = -STD=C++0X -PEDANTIC -WALL -WERROR
+RESULT = ./BIN/RSHELL
+DIRECTORY = ./SRC/MAIN.CPP
+ALL:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -O $(RESULT)
+	$(COMPILER) $(CFLAGS) ./SRC/LS.CPP -O ./BIN/LS
+	$(COMPILER) $(CLFAGS) ./SRC/CP.CPP -O ./BIN/CP
+
+RSHELL:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -O $(RESULT)
+LS:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) ./SRC/LS.CPP -O ./BIN/LS
+CP:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) ./SRC/CP.CPP -O ./BIN/CP
+CLEAN:
+	RM -RF ./BIN
+kluu006@hammer.cs.ucr.edu:$ cat this_file
+compiler = g++
+cflags = -std=c++0x -pedantic -wall -werror
+result = ./bin/rshell
+directory = ./src/main.cpp
+all:
+	mkdir -p ./bin
+	$(compiler) $(cflags) $(directory) -o $(result)
+	$(compiler) $(cflags) ./src/ls.cpp -o ./bin/ls
+	$(compiler) $(clfags) ./src/cp.cpp -o ./bin/cp
+
+rshell:
+	mkdir -p ./bin
+	$(compiler) $(cflags) $(directory) -o $(result)
+ls:
+	mkdir -p ./bin
+	$(compiler) $(cflags) ./src/ls.cpp -o ./bin/ls
+cp:
+	mkdir -p ./bin
+	$(compiler) $(cflags) ./src/cp.cpp -o ./bin/cp
+clean:
+	rm -rf ./bin
+kluu006@hammer.cs.ucr.edu:$ #notice the change in caps
+kluu006@hammer.cs.ucr.edu:$ cat < this_file | tail > r2
+kluu006@hammer.cs.ucr.edu:$ cat r2
+	mkdir -p ./bin
+	$(compiler) $(cflags) $(directory) -o $(result)
+ls:
+	mkdir -p ./bin
+	$(compiler) $(cflags) ./src/ls.cpp -o ./bin/ls
+cp:
+	mkdir -p ./bin
+	$(compiler) $(cflags) ./src/cp.cpp -o ./bin/cp
+clean:
+	rm -rf ./bin
+kluu006@hammer.cs.ucr.edu:$ cat < this_file | tail | grep l >  >                                   <this_file|tail|grep l| >>r2
+kluu006@hammer.cs.ucr.edu:$ cat r2
+	mkdir -p ./bin
+	$(compiler) $(cflags) $(directory) -o $(result)
+ls:
+	mkdir -p ./bin
+	$(compiler) $(cflags) ./src/ls.cpp -o ./bin/ls
+cp:
+	mkdir -p ./bin
+	$(compiler) $(cflags) ./src/cp.cpp -o ./bin/cp
+clean:
+	rm -rf ./bin
+	$(compiler) $(cflags) $(directory) -o $(result)
+ls:
+	$(compiler) $(cflags) ./src/ls.cpp -o ./bin/ls
+	$(compiler) $(cflags) ./src/cp.cpp -o ./bin/cp
+clean:
+kluu006@hammer.cs.ucr.edu:$ works
+execvp: No such file or directory
+kluu006@hammer.cs.ucr.edu:$ #woops
+kluu006@hammer.cs.ucr.edu:$ ls
+3     j        Makefile  README.md  tests
+bin   kicks    new_file  rock	    this_file
+cool  LICENSE  r2	 src	    troll_file
+kluu006@hammer.cs.ucr.edu:$ cat rock
+COMPILER = G++
+CFLAGS = -STD=C++0X -PEDANTIC -WALL -WERROR
+RESULT = ./BIN/RSHELL
+DIRECTORY = ./SRC/MAIN.CPP
+ALL:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -O $(RESULT)
+	$(COMPILER) $(CFLAGS) ./SRC/LS.CPP -O ./BIN/LS
+	$(COMPILER) $(CLFAGS) ./SRC/CP.CPP -O ./BIN/CP
+
+RSHELL:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) $(DIRECTORY) -O $(RESULT)
+LS:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) ./SRC/LS.CPP -O ./BIN/LS
+CP:
+	MKDIR -P ./BIN
+	$(COMPILER) $(CFLAGS) ./SRC/CP.CPP -O ./BIN/CP
+CLEAN:
+	RM -RF ./BIN
+kluu006@hammer.cs.ucr.edu:$ cat j
+trl
+kluu006@hammer.cs.ucr.edu:$ cat < j>  > bay
+kluu006@hammer.cs.ucr.edu:$ cat bay
+trl
+kluu006@hammer.cs.ucr.edu:$ #input then output
+kluu006@hammer.cs.ucr.edu:$ #ceer  rtain syntax tho rows an eror  ror
+kluu006@hammer.cs.ucr.edu:$ <
+Not valid
+kluu006@hammer.cs.ucr.edu:$ >
+Not valid
+kluu006@hammer.cs.ucr.edu:$ |
+Not valid
+kluu006@hammer.cs.ucr.edu:$ < >
+Not valid
+kluu006@hammer.cs.ucr.edu:$   <<
+Not valid
+kluu006@hammer.cs.ucr.edu:$ < >>>> <
+Not valid
+kluu006@hammer.cs.ucr.edu:$ < pwd
+Not valid
+kluu006@hammer.cs.ucr.edu:$ cat rock    < rock > ls               cat   cat < rock | ls | ls
+3    cool   LICENSE   r2	 src	    troll_file
+bay  j	    Makefile  README.md  tests
+bin  kicks  new_file  rock	 this_file
+kluu006@hammer.cs.ucr.edu:$ ls |
+No other end
+kluu006@hammer.cs.ucr.edu:$ | ls
+Not valid
+kluu006@hammer.cs.ucr.edu:$ ls | | ls
+Not valid
+No valid pipe
+kluu006@hammer.cs.ucr.edu:$ ls |  \ |  |   
+Not valid
+No valid pipe
+kluu006@hammer.cs.ucr.edu:$ ls  |     ls |    ls|
+No other end
+kluu006@hammer.cs.ucr.edu:$ ls -l|         | tr ail
+-rw------- 1 kluu006 csmajs 1472 May 17 19:05 LICENSE
+-rw------- 1 kluu006 csmajs  505 May 17 19:05 Makefile
+-rw------- 1 kluu006 csmajs   21 May 17 21:54 new_file
+-rw------- 1 kluu006 csmajs  378 May 17 22:06 r2
+-rw------- 1 kluu006 csmajs 2568 May 17 19:05 README.md
+-rw------- 1 kluu006 csmajs  505 May 17 22:03 rock
+drwx------ 2 kluu006 csmajs 4096 May 17 21:42 src
+drwx------ 2 kluu006 csmajs 4096 May 17 21:42 tests
+-rw------- 1 kluu006 csmajs  505 May 17 22:03 this_file
+-rw------- 1 kluu006 csmajs   21 May 17 21:54 troll_file
+kluu006@hammer.cs.ucr.edu:$ cat < j
+trl
+kluu006@hammer.cs.ucr.edu:$ cat M j   < j > z
+kluu006@hammer.cs.ucr.edu:$ cat z
+trl
+kluu006@hammer.cs.ucr.edu:$ cat < > j > z
+kluu006@hammer.cs.ucr.edu:$ cat z
+trl
+kluu006@hammer.cs.ucr.edu:$ cat     <   j   >>z
+kluu006@hammer.cs.ucr.edu:$ cat z
+trl
+trl
+kluu006@hammer.cs.ucr.edu:$ #this syntax thrwo  ows na  an error
+kluu006@hammer.cs.ucr.edu:$ cat <     echo kool > zoo M 3   < 3
+wtf
+Invalid input stream
+kluu006@hammer.cs.ucr.edu:$ cat <
+No input file
+kluu006@hammer.cs.ucr.edu:$ cat ?     echo hello >
+kluu006@hammer.cs.ucr.edu:$ #t noti hing to go to
+kluu006@hammer.cs.ucr.edu:$ ls
+3    cool   LICENSE   r2	 src	    troll_file
+bay  j	    Makefile  README.md  tests	    z
+bin  kicks  new_file  rock	 this_file  zoo
+kluu006@hammer.cs.ucr.edu:$ ps
+  PID TTY          TIME CMD
+30088 pts/49   00:00:00 bash
+30218 pts/49   00:00:00 rshell
+41161 pts/49   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:$ ls         |       ls  | grep      grep    c
+cool
+kicks
+rock
+src
+kluu006@hammer.cs.ucr.edu:$ #i think thats about it
+kluu006@hammer.cs.ucr.edu:$ < asdas
+Not valid
+kluu006@hammer.cs.ucr.edu:$ > dasdsadsa
+Not valid
+kluu006@hammer.cs.ucr.edu:$ <       <     das
+Not valid
+kluu006@hammer.cs.ucr.edu:$ #random checking
+kluu006@hammer.cs.ucr.edu:$ cat < j |             <     j  |ls    | tee bizzy >> new_file_this
+kluu006@hammer.cs.ucr.edu:$ cat new_file_this
+3
+bay
+bin
+cool
+j
+kicks
+LICENSE
+Makefile
+new_file
+r2
+README.md
+rock
+src
+tests
+this_file
+troll_file
+z
+zoo
+kluu006@hammer.cs.ucr.edu:$ cat bu izzy
+3
+bay
+bin
+cool
+j
+kicks
+LICENSE
+Makefile
+new_file
+r2
+README.md
+rock
+src
+tests
+this_file
+troll_file
+z
+zoo
+kluu006@hammer.cs.ucr.edu:$ cat<j
+trl
+kluu006@hammer.cs.ucr.edu:$ cat          <      j
+trl
+kluu006@hammer.cs.ucr.edu:$ echo hello    >> j
+kluu006@hammer.cs.ucr.edu:$ cat j
+trl
+hello
+kluu006@hammer.cs.ucr.edu:$ echo          hello > i
+kluu006@hammer.cs.ucr.edu:$ cat i
+hello
+kluu006@hammer.cs.ucr.edu:$ echo       hello       >> ii
+kluu006@hammer.cs.ucr.edu:$ ca  echo ii       cat ii
+hello
+kluu006@hammer.cs.ucr.edu:$ #didnt o do extra credit
+kluu006@hammer.cs.ucr.edu:$ #goodbye
+kluu006@hammer.cs.ucr.edu:$ exit    #just for u fun
+kluu006@hammer.cs.ucr.edu:$ #lets add some
+kluu006@hammer.cs.ucr.edu:$ # conectors
+kluu006@hammer.cs.ucr.edu:$ ls | ls;
+3      cool  kicks     new_file_this  src	  z
+bay    i     LICENSE   r2	      tests	  zoo
+bin    ii    Makefile  README.md      this_file
+bizzy  j     new_file  rock	      troll_file
+kluu006@hammer.cs.ucr.edu:$ ls | ls         cat < r j || r ls
+trl
+hello
+3      cool  kicks     new_file_this  src	  z
+bay    i     LICENSE   r2	      tests	  zoo
+bin    ii    Makefile  README.md      this_file
+bizzy  j     new_file  rock	      troll_file
+kluu006@hammer.cs.ucr.edu:$ #c  #  even if there is an } orr c ==      c  r connector, for this assignment everything will run ife  there is a pipe or io redirection
+kluu006@hammer.cs.ucr.edu:$ && ls | ls
+3      cool  kicks     new_file_this  src	  z
+bay    i     LICENSE   r2	      tests	  zoo
+bin    ii    Makefile  README.md      this_file
+bizzy  j     new_file  rock	      troll_file
+kluu006@hammer.cs.ucr.edu:$ ;;; ls | grep c;
+cool
+kicks
+rock
+src
+kluu006@hammer.cs.ucr.edu:$ asdas exit
+execvp: No such file or directory
+kluu006@hammer.cs.ucr.edu:$ ex  # #i am exx tting     iting
+kluu006@hammer.cs.ucr.edu:$ # exit
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/water/rshell[0;95m (redirect) [0;36m$[0m exit
+exit
+~
+kluu006@hammer $ exit
+exit
+
+Script done on Sun 17 May 2015 10:25:13 PM PDT
