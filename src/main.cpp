@@ -871,7 +871,10 @@ int main(int argc, char* argv[])
 								if(do_only_once == 1)
 								{
 									
-									run_in_pipe(polol, boo.at(boo.size()- 1), file_d);
+									if(run_in_pipe(polol, boo.at(boo.size()- 1), file_d) == false){
+										redirection = false;
+										break;
+									}
 									num_pipes--;
 								}
 								if(do_only_once != 1 && num_pipes != 1){
