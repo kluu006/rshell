@@ -870,11 +870,17 @@ int main(int argc, char* argv[])
 								//run_pipe_before(wolol, file_d), counter++;
 								if(do_only_once == 1)
 								{
+									
 									run_in_pipe(polol, boo.at(boo.size()- 1), file_d);
 									num_pipes--;
 								}
 								if(do_only_once != 1 && num_pipes != 1){
 									if(also_once == 1) pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
+									if(*wolol == NULL){
+										cerr << "Not valid pipe" << endl;
+										redirection = false;
+										break;
+									}
 									run_pipe_after(wolol, file_d);
 									num_pipes--;
 									also_once++;
@@ -884,8 +890,8 @@ int main(int argc, char* argv[])
 									//pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
 									if(-1 == dup2(descrip_out, 1)) perror("dup"), exit(1); 
 									if(!final_out)pipe_er(condition_re, wolol, lol, redirection, index_re_copy);
-									if(redirection == false)
-										cerr << "Not valid pipe" << endl;
+									//if(redirection == false)
+										//cerr << "Not valid pipe" << endl;
 									
 									if(!final_out)
 									{
