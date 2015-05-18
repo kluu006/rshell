@@ -1070,8 +1070,8 @@ int main(int argc, char* argv[])
 								if(condition_re == out_re || condition_re == out_re2)
 								{
 									files = grab_files_out(lol, index_re_copy);
-									if(files.size() == 0) cerr << "No output file" << endl, redirection = false;
-									else run_redir_out(condition_re, wolol, files);
+									//if(files.size() == 0) cerr << "No output file" << endl, redirection = false;
+									run_redir_out(condition_re, wolol, files);
 								//	if(files.size() == 0 && counters != 0) cerr << "No input" << endl;
 									index_re = index_re_copy;
 								}
