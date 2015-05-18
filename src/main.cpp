@@ -934,10 +934,7 @@ int main(int argc, char* argv[])
 								do_only_once = 0;
 								index_re = index_re_copy;
 							}
-							//cout << "out ehere" << endl;
 							break;
-							//cout << redirection << endl;
-							//redirection = false;
 
 							
 						}
