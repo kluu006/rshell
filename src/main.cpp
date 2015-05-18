@@ -1009,6 +1009,7 @@ int main(int argc, char* argv[])
 						}
 						else if(out_in || out_pipe)
 						{
+							cerr << "wtf" << endl;
 							vector<string> oo;
 							vector<string> boo;
 							while((condition_re != in_re) && redirection)
@@ -1017,13 +1018,16 @@ int main(int argc, char* argv[])
 								if(condition_re != in_re)
 								{
 									files = grab_files_in(lol, index_re_copy);
-									run_redir_out(condition_re, wolol, files);
+									if(files.size() != 0) run_redir_out(condition_re, wolol, files);
 									index_re = index_re_copy;
+								}
+								if(out_pipe){
+									cerr << "Invalid pipe" << endl;
+									break;
 								}
 							}
 							redirection = false;
 							if(out_in) cerr << "Invalid input stream" << endl;
-							if(out_pipe) cerr << "Invalid pipe" << endl;
 							break;
 						}
 						else if(in_out)
