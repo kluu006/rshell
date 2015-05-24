@@ -1,4 +1,5 @@
 #include <iostream>
+#include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -21,6 +22,11 @@ const string semi_c = ";";
 const string num_s = "#";
 int descrip_in;
 int descrip_out;
+char directory_name[BUFSIZ];
+struct sigaction pres_state, prev_state;
+
+
+
 void display_name()
 {
 	char* login = getlogin();
@@ -33,12 +39,23 @@ void display_name()
 	if(gethostname(host_name, BUFSIZ)== -1) //displays the host name
 		perror("gethostname");
 
-	/*char directory_name[BUFSIZ];
 	if(getcwd(directory_name, BUFSIZ) == NULL) //displays the directory
-		perror("getcwd");*/
+		perror("getcwd");
 
-	cout << login  << "@" << host_name  << ":" /*<< directory_name*/ << "$ ";
+	cout << login  << "@" << host_name  << ":" << directory_name << "$ ";
 	
+}
+
+void signals(int signum){
+	switch(signum){
+		case SIGINT:
+			break;
+		case SIGTSTP:
+			raise(SIGSTOP);
+			break;
+		default:
+			break;
+	}
 }
 
 void add_spaces(string& user_input)
@@ -142,6 +159,86 @@ bool contain_exit(char** terminate)	//check if exit
 		return true;
 	else
 		return false;
+}
+bool run_cd(char** lol, size_t& cd_counter){
+	string zoo;
+	string voo;
+	string doo;
+	if(lol[1] != NULL){
+		zoo = lol[1];
+		if(zoo == "-" && (cd_counter % 2 == 1)){
+			voo = getenv("PWD");
+			if(voo == "\0"){
+				perror("getenv");
+				return false;
+			}
+			if(chdir(voo.c_str()) == -1){
+				perror("Chdir");
+				return false;
+			}
+			cd_counter++;
+		}
+		else if(zoo == "-" && (cd_counter % 2 == 0)){
+			voo = getenv("OLDPWD");
+			if(voo == "\0"){
+				perror("getenv");
+				return false;
+			}
+			if(chdir(voo.c_str()) == -1){
+				perror("Chdir");
+				return false;
+			}
+			cd_counter++;
+		}
+		else{
+			cd_counter = 0;
+			if(chdir(lol[1]) == -1){
+				perror("Chdir");
+				return false;
+			}
+			doo = getenv("PWD");
+			if(doo == "\0"){
+				perror("PWD");
+				return false;
+			}
+			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
+				perror("setenv");
+				return false;
+			}
+			if(setenv("PWD", lol[1], 1) == -1){
+				perror("setenv");
+				return false;
+			}
+		}
+	}
+	if(lol[1] == NULL){
+		zoo = getenv("HOME");
+		if(zoo == "\0"){
+			perror("getenv");
+			exit(1);
+		}
+		else{
+			if(chdir(zoo.c_str()) == -1){
+				perror("chdir");
+				return false;
+			}
+			doo = getenv("PWD");
+			if(doo == "\0"){
+				perror("PWD");
+				return false;
+			}
+			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
+				perror("setenv");
+				return false;
+			}
+			if(setenv("PWD", zoo.c_str(), 1) == -1){
+				perror("setenv");
+				return false;
+			}
+		}
+	}
+	//cd_counter++;
+	return true;
 }
 void tokenizer(string& conditional, char**& lol, char*& the_token, bool& redirection)
 {
@@ -655,10 +752,25 @@ bool run_execvp(char** arg, bool& koo)
 
 int main(int argc, char* argv[])
 {
+	/*
+	pres_state.sa_handler = signals;
+	sigaction(SIGINT, NULL, &prev_state);
+	if(prev_state.sa_handler != SIG_IGN)
+		sigaction(SIGINT, &pres_state, NULL);
+	sigaction(SIGQUIT, NULL, &prev_state);
+	if(prev_state.sa_handler != SIG_IGN)
+		sigaction(SIGQUIT, &pres_state, NULL);
+	sigaction(SIGTSTP, NULL, &prev_state);
+	if(prev_state.sa_handler != SIG_IGN)
+		sigaction(SIGTSTP, &pres_state, NULL);
+		*/
+	signal(SIGINT, signals);
+	signal(SIGTSTP, signals);
 	descrip_in = dup(0);
 	if(descrip_in == -1) perror("dup"), exit(1);
 	descrip_out = dup(1);
 	if(descrip_out == -1) perror("dup"), exit(1);
+	size_t cd_counter = 0;
 	while(cin.good())		//whenever there is a system call remember to have perror
 	{
 		display_name();
@@ -685,7 +797,17 @@ int main(int argc, char* argv[])
 				if(!redirection)
 				{
 					if(*lol != NULL && !prev_or && prev_and)
+					{
+						string bob;
+						if(lol[0] != NULL) bob = lol[0];
 						if(contain_exit(lol)) exit(1);	//exits program
+						if(bob == "cd")
+						{
+							if(run_cd(lol, cd_counter));// cd_counter = 0;
+							//else cd_counter++;
+							break;
+						}
+					}
 					if(condition == or_c)
 					{
 						if(prev_or) free(lol);			//if previous condition true, does not run exec
@@ -1171,8 +1293,9 @@ int main(int argc, char* argv[])
 				}
 				if(delete_wolol) free(lol);
 			}
-			break;
+			//break;
 		}
+		fflush(stdout);
 	}
 	return 0;
 }
