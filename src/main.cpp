@@ -160,52 +160,55 @@ bool contain_exit(char** terminate)	//check if exit
 	else
 		return false;
 }
-bool run_cd(char** lol, size_t& cd_counter){
+bool run_cd(char** lol){
 	string zoo;
 	string voo;
 	string doo;
 	if(lol[1] != NULL){
 		zoo = lol[1];
-		if(zoo == "-" && (cd_counter % 2 == 1)){
-			voo = getenv("PWD");
-			if(voo == "\0"){
-				perror("getenv");
-				return false;
-			}
-			if(chdir(voo.c_str()) == -1){
-				perror("Chdir");
-				return false;
-			}
-			cd_counter++;
-		}
-		else if(zoo == "-" && (cd_counter % 2 == 0)){
+		if(zoo == "-"){
 			voo = getenv("OLDPWD");
 			if(voo == "\0"){
 				perror("getenv");
 				return false;
 			}
-			if(chdir(voo.c_str()) == -1){
-				perror("Chdir");
-				return false;
-			}
-			cd_counter++;
-		}
-		else{
-			cd_counter = 0;
-			if(chdir(lol[1]) == -1){
-				perror("Chdir");
-				return false;
-			}
 			doo = getenv("PWD");
 			if(doo == "\0"){
-				perror("PWD");
+				perror("getenv");
+				return false;
+			}
+			if(chdir(voo.c_str()) == -1){
+				perror("Chdir");
 				return false;
 			}
 			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
 				perror("setenv");
 				return false;
 			}
-			if(setenv("PWD", lol[1], 1) == -1){
+			if(setenv("PWD", voo.c_str(), 1) == -1){
+				perror("setenv");
+				return false;
+			}
+			cout << voo << endl;
+		}
+		else{
+			doo = getenv("PWD");
+			if(doo == "\0"){
+				perror("PWD");
+				return false;
+			}
+			if(chdir(lol[1]) == -1){
+				perror("Chdir");
+				return false;
+			}
+			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
+				perror("setenv");
+				return false;
+			}
+			char wom[BUFSIZ];
+			if(getcwd(wom, BUFSIZ) == NULL) //displays the directory
+				perror("getcwd");
+			if(setenv("PWD", wom, 1) == -1){
 				perror("setenv");
 				return false;
 			}
@@ -224,7 +227,7 @@ bool run_cd(char** lol, size_t& cd_counter){
 			}
 			doo = getenv("PWD");
 			if(doo == "\0"){
-				perror("PWD");
+				perror("getenv");
 				return false;
 			}
 			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
@@ -237,7 +240,6 @@ bool run_cd(char** lol, size_t& cd_counter){
 			}
 		}
 	}
-	//cd_counter++;
 	return true;
 }
 void tokenizer(string& conditional, char**& lol, char*& the_token, bool& redirection)
@@ -770,7 +772,6 @@ int main(int argc, char* argv[])
 	if(descrip_in == -1) perror("dup"), exit(1);
 	descrip_out = dup(1);
 	if(descrip_out == -1) perror("dup"), exit(1);
-	size_t cd_counter = 0;
 	while(cin.good())		//whenever there is a system call remember to have perror
 	{
 		display_name();
@@ -803,8 +804,7 @@ int main(int argc, char* argv[])
 						if(contain_exit(lol)) exit(1);	//exits program
 						if(bob == "cd")
 						{
-							if(run_cd(lol, cd_counter));// cd_counter = 0;
-							//else cd_counter++;
+							if(run_cd(lol));
 							break;
 						}
 					}
