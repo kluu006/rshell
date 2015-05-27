@@ -25,8 +25,6 @@ int descrip_out;
 char directory_name[BUFSIZ];
 struct sigaction pres_state, prev_state;
 
-
-
 void display_name()
 {
 	char* login = getlogin();
@@ -42,15 +40,28 @@ void display_name()
 	if(getcwd(directory_name, BUFSIZ) == NULL) //displays the directory
 		perror("getcwd");
 
-	cout << login  << "@" << host_name  << ":" << directory_name << "$ ";
+	string s = directory_name;
+	string q;
+	q = getenv("HOME");
+	if(q == "\0"){
+		perror("getenv");
+		exit(1);
+	}
+	if(s.find(q, 0) != -1){
+		s.erase(0, q.size());
+		s = "~" + s;
+	}
+	cout << login  << "@" << host_name  << ":" << s  << "$ ";
 	
 }
 
 void signals(int signum){
 	switch(signum){
 		case SIGINT:
+			cout << endl;
 			break;
 		case SIGTSTP:
+			//cout << endl;
 			raise(SIGSTOP);
 			break;
 		default:
@@ -197,7 +208,17 @@ bool run_cd(char** lol){
 				perror("PWD");
 				return false;
 			}
-			if(chdir(lol[1]) == -1){
+			zoo = getenv("HOME");
+			if(zoo == "\0"){
+				perror("getenv");
+				exit(1);
+			}
+			string pen = lol[1];
+			if(pen.at(0) == '~'){
+				pen.erase(0,1);
+				pen = zoo + pen;
+			}
+			if(chdir(pen.c_str()) == -1){
 				perror("Chdir");
 				return false;
 			}
@@ -754,7 +775,6 @@ bool run_execvp(char** arg, bool& koo)
 
 int main(int argc, char* argv[])
 {
-	/*
 	pres_state.sa_handler = signals;
 	sigaction(SIGINT, NULL, &prev_state);
 	if(prev_state.sa_handler != SIG_IGN)
@@ -765,15 +785,15 @@ int main(int argc, char* argv[])
 	sigaction(SIGTSTP, NULL, &prev_state);
 	if(prev_state.sa_handler != SIG_IGN)
 		sigaction(SIGTSTP, &pres_state, NULL);
-		*/
-	signal(SIGINT, signals);
-	signal(SIGTSTP, signals);
+	//if(SIG_ERR == signal(SIGINT, signals)) exit(1);
+	//if(SIG_ERR == signal(SIGTSTP, signals)) exit(1);
 	descrip_in = dup(0);
 	if(descrip_in == -1) perror("dup"), exit(1);
 	descrip_out = dup(1);
 	if(descrip_out == -1) perror("dup"), exit(1);
-	while(cin.good())		//whenever there is a system call remember to have perror
+	while(1)		//whenever there is a system call remember to have perror
 	{
+		cin.clear();
 		display_name();
 		string user_input;
 		getline(cin, user_input);			//user input
@@ -805,6 +825,8 @@ int main(int argc, char* argv[])
 						if(bob == "cd")
 						{
 							if(run_cd(lol));
+							else
+							free(lol);
 							break;
 						}
 					}
@@ -839,7 +861,7 @@ int main(int argc, char* argv[])
 						}
 
 					}
-					else if(condition == semi_c)	
+					else if(condition == semi_c)
 					{
 						if(!prev_or && prev_and)
 						{
