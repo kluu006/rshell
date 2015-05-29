@@ -24,7 +24,8 @@ int descrip_in;
 int descrip_out;
 char directory_name[BUFSIZ];
 struct sigaction pres_state, prev_state;
-
+pid_t global_pid;
+//bool was_killed = false;
 void display_name()
 {
 	char* login = getlogin();
@@ -47,7 +48,8 @@ void display_name()
 		perror("getenv");
 		exit(1);
 	}
-	if(s.find(q, 0) != -1){
+	size_t neg = -1;
+	if(s.find(q, 0) != neg){
 		s.erase(0, q.size());
 		s = "~" + s;
 	}
@@ -56,17 +58,36 @@ void display_name()
 }
 
 void signals(int signum){
+/*
 	switch(signum){
 		case SIGINT:
 			cout << endl;
+			global_pid = 0;
 			break;
 		case SIGTSTP:
-			//cout << endl;
-			raise(SIGSTOP);
+			cout << endl;
+			//cout << global_pid << endl;
+			//if(-1 == kill(global_pid, SIGSTOP))
+				perror("kill");
+			//else was_killed = true;
+			//raise(SIGCONT);
+			//raise(SIGSTOP);
 			break;
-		default:
-			break;
+	}*/
+	if(signum == SIGINT){
+		cout << endl;
+		if(global_pid != 0){
+			kill(global_pid, SIGKILL);
+			global_pid = 0;
+		}
 	}
+	else if(signum == SIGTSTP){
+		cout << endl;
+		if(global_pid != 0){
+			kill(global_pid, SIGSTOP);
+		}
+	}
+
 }
 
 void add_spaces(string& user_input)
@@ -730,6 +751,7 @@ bool run_execvp(char** arg, bool& koo)
 		return false;
 	}
 	int pid = fork();
+	global_pid = pid;
 	if(pid == -1)			//if couldn't fork, returns perror
 	{
 		perror("fork");
@@ -747,7 +769,10 @@ bool run_execvp(char** arg, bool& koo)
 	}
 	else if(pid > 0)
 	{
-		int r = waitpid(pid, &status,0);
+		int r;
+		do{
+			r = waitpid(pid, &status,WUNTRACED);
+		}while(errno == EINTR && r == -1);
 		if(r == -1)
 			perror("wait"); //somehow an error during waiting
 		string init = arg[0];
@@ -776,15 +801,29 @@ bool run_execvp(char** arg, bool& koo)
 int main(int argc, char* argv[])
 {
 	pres_state.sa_handler = signals;
-	sigaction(SIGINT, NULL, &prev_state);
-	if(prev_state.sa_handler != SIG_IGN)
-		sigaction(SIGINT, &pres_state, NULL);
-	sigaction(SIGQUIT, NULL, &prev_state);
-	if(prev_state.sa_handler != SIG_IGN)
-		sigaction(SIGQUIT, &pres_state, NULL);
-	sigaction(SIGTSTP, NULL, &prev_state);
-	if(prev_state.sa_handler != SIG_IGN)
-		sigaction(SIGTSTP, &pres_state, NULL);
+	if(sigaction(SIGINT, NULL, &prev_state) == -1){
+		perror("sigaction");
+		exit(1);
+	}
+	if(prev_state.sa_handler != SIG_IGN){
+		if(sigaction(SIGINT, &pres_state, NULL) == -1){
+			perror("sigaction");
+			exit(1);
+		}
+	}
+	if(sigaction(SIGTSTP, NULL, &prev_state) == -1){
+		perror("sigaction");
+		exit(1);
+	}
+	if(prev_state.sa_handler != SIG_IGN){
+		if(sigaction(SIGTSTP, &pres_state, NULL) == -1){
+			perror("sigaction");
+			exit(1);
+		}
+	}
+	//sigaction(SIGQUIT, NULL, &prev_state);
+	//if(prev_state.sa_handler != SIG_IGN)
+	//	sigaction(SIGQUIT, &pres_state, NULL);
 	//if(SIG_ERR == signal(SIGINT, signals)) exit(1);
 	//if(SIG_ERR == signal(SIGTSTP, signals)) exit(1);
 	descrip_in = dup(0);
@@ -793,8 +832,8 @@ int main(int argc, char* argv[])
 	if(descrip_out == -1) perror("dup"), exit(1);
 	while(1)		//whenever there is a system call remember to have perror
 	{
-		cin.clear();
 		display_name();
+		cin.clear();
 		string user_input;
 		getline(cin, user_input);			//user input
 		add_spaces(user_input);
@@ -827,6 +866,12 @@ int main(int argc, char* argv[])
 							if(run_cd(lol));
 							else
 							free(lol);
+							break;
+						}
+						if(bob == "fg"){
+							int status;
+							if(-1 == kill(global_pid, SIGCONT)) perror("kill");
+							wait(&status);
 							break;
 						}
 					}
