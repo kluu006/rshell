@@ -25,6 +25,7 @@ int descrip_out;
 char directory_name[BUFSIZ];
 struct sigaction pres_state, prev_state;
 pid_t global_pid;
+vector<pid_t> many_pids;
 //bool was_killed = false;
 void display_name()
 {
@@ -58,22 +59,6 @@ void display_name()
 }
 
 void signals(int signum){
-/*
-	switch(signum){
-		case SIGINT:
-			cout << endl;
-			global_pid = 0;
-			break;
-		case SIGTSTP:
-			cout << endl;
-			//cout << global_pid << endl;
-			//if(-1 == kill(global_pid, SIGSTOP))
-				perror("kill");
-			//else was_killed = true;
-			//raise(SIGCONT);
-			//raise(SIGSTOP);
-			break;
-	}*/
 	if(signum == SIGINT){
 		cout << endl;
 		if(global_pid != 0){
@@ -84,7 +69,13 @@ void signals(int signum){
 	else if(signum == SIGTSTP){
 		cout << endl;
 		if(global_pid != 0){
-			kill(global_pid, SIGSTOP);
+			many_pids.push_back(global_pid);
+		}
+		else if(many_pids.size() != 0){
+			if(-1 == kill(many_pids.at(many_pids.size()-1), SIGSTOP)){
+				perror("kill");
+				exit(1);
+			}
 		}
 	}
 
@@ -202,12 +193,12 @@ bool run_cd(char** lol){
 			voo = getenv("OLDPWD");
 			if(voo == "\0"){
 				perror("getenv");
-				return false;
+				exit(1);
 			}
 			doo = getenv("PWD");
 			if(doo == "\0"){
 				perror("getenv");
-				return false;
+				exit(1);
 			}
 			if(chdir(voo.c_str()) == -1){
 				perror("Chdir");
@@ -215,11 +206,11 @@ bool run_cd(char** lol){
 			}
 			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
 				perror("setenv");
-				return false;
+				exit(1);
 			}
 			if(setenv("PWD", voo.c_str(), 1) == -1){
 				perror("setenv");
-				return false;
+				exit(1);
 			}
 			cout << voo << endl;
 		}
@@ -227,7 +218,7 @@ bool run_cd(char** lol){
 			doo = getenv("PWD");
 			if(doo == "\0"){
 				perror("PWD");
-				return false;
+				exit(1);
 			}
 			zoo = getenv("HOME");
 			if(zoo == "\0"){
@@ -245,14 +236,14 @@ bool run_cd(char** lol){
 			}
 			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
 				perror("setenv");
-				return false;
+				exit(1);
 			}
 			char wom[BUFSIZ];
 			if(getcwd(wom, BUFSIZ) == NULL) //displays the directory
 				perror("getcwd");
 			if(setenv("PWD", wom, 1) == -1){
 				perror("setenv");
-				return false;
+				exit(1);
 			}
 		}
 	}
@@ -270,15 +261,15 @@ bool run_cd(char** lol){
 			doo = getenv("PWD");
 			if(doo == "\0"){
 				perror("getenv");
-				return false;
+				exit(1);
 			}
 			if(setenv("OLDPWD", doo.c_str(), 1) == -1){
 				perror("setenv");
-				return false;
+				exit(1);
 			}
 			if(setenv("PWD", zoo.c_str(), 1) == -1){
 				perror("setenv");
-				return false;
+				exit(1);
 			}
 		}
 	}
@@ -821,6 +812,16 @@ int main(int argc, char* argv[])
 			exit(1);
 		}
 	}
+	if(sigaction(SIGCHLD, NULL, &prev_state) == -1){
+		perror("sigaction");
+		exit(1);
+	}
+	if(prev_state.sa_handler != SIG_IGN){
+		if(sigaction(SIGCHLD, &pres_state, NULL) == -1){
+			perror("sigaction");
+			exit(1);
+		}
+	}
 	//sigaction(SIGQUIT, NULL, &prev_state);
 	//if(prev_state.sa_handler != SIG_IGN)
 	//	sigaction(SIGQUIT, &pres_state, NULL);
@@ -864,14 +865,47 @@ int main(int argc, char* argv[])
 						if(bob == "cd")
 						{
 							if(run_cd(lol));
-							else
 							free(lol);
 							break;
 						}
 						if(bob == "fg"){
 							int status;
-							if(-1 == kill(global_pid, SIGCONT)) perror("kill");
-							wait(&status);
+							int r;
+							if(many_pids.size() != 0){
+								if(-1 == kill(many_pids.at(0), SIGCONT)) perror("kill");
+								do{
+									r = waitpid(many_pids.at(0), &status,WUNTRACED);
+								}while(errno == EINTR && r == -1);
+								if(r == -1){
+									perror("wait");
+								}
+								many_pids.pop_back();
+							}
+							else cout << "No processes" << endl;
+							free(lol);
+							break;
+						}
+						if(bob == "bg"){
+							int status;
+							int r;
+							siginfo_t q;
+							if(many_pids.size() != 0){
+								if(-1 == kill(many_pids.at(0), SIGCONT)) perror("kill");
+								do{
+									r = waitid(P_PID,many_pids.at(0), &q, WNOWAIT);
+									//r = waitpid(many_pids.at(0), &status,WCONTINUED);
+									/*	
+									if(WEXITSTATUS(status) == 0){
+										kill(many_pids.at(0), SIGKILL);
+										break;
+									}*/
+								}while(errno == EINTR && r == -1);
+								if(r == -1){
+									perror("wait");
+								}
+							}
+							else cout << "No processes" << endl;
+							free(lol);
 							break;
 						}
 					}
