@@ -17,6 +17,10 @@ If I/O redirection or pipe symbol is the first instance, it will throw an error 
 
 For I/O redirection and piping, connector logic does not matter. They will always run even if the first part is true and I/O redirection or piping is after a `&&`. Some for the other logic.
 
+`cd`, `cd -`, `cd path`, and `cd ~` is supported.
+
+Ctrl-C is supported along with Ctrl-Z (fg only).
+
 **EDGE CASES:**
 Having an empty command returns false. There is no error output.
 
@@ -65,6 +69,7 @@ Does not have the option for changing file descriptors.
 Does not do <<<.
 There are probably more bugs I haven't found.
 Cannot have input redirection after piping, but it can work if input redirection is before piping.
+Bg does not work properly.
 
 ```
 ## Bugs / Limitations for ls
