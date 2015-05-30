@@ -886,7 +886,6 @@ int main(int argc, char* argv[])
 							break;
 						}
 						if(bob == "bg"){
-							int status;
 							int r;
 							siginfo_t q;
 							if(many_pids.size() != 0){

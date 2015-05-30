@@ -75,6 +75,9 @@ void readwrite1char(unsigned long long size, int argc, char **argv) {
             exit(1);
         }
     }
+    if(rin == -1){
+    	perror("read");
+    }
     t.elapsedTime(wTime, eTime, sTime);
     if (argc > 3) {
         std::cout << "Copying with 1 char buffer read() write(): " << std::endl;
@@ -120,6 +123,9 @@ void readwritebufsiz(unsigned long long size, int argc, char **argv) {
             exit(1);
         }
     }
+    if(rin == -1){
+    	perror("read");
+    }
     t.elapsedTime(wTime, eTime, sTime);
     if (argc > 3) {
         std::cout << "Copying with BUFSIZ buffer read() write(): " << std::endl;
@@ -147,10 +153,12 @@ int main(int argc, char **argv) {
         std::cerr << "source file doesn't exist or no permissions" << std::endl;
         exit(1);
     }
+    else perror("access");
     if (access(argv[2], F_OK) == 0) {
         std::cerr << "target file already exists" << std::endl;
         exit(1);
     }
+    else perror("access");
 
     // Get size of file 
     unsigned long long size;
@@ -179,7 +187,9 @@ int main(int argc, char **argv) {
             std::cerr << "arg2 is directory" << std::endl;
             exit(1);
         }
-    } 
+    } else {
+    	if(false) perror("stat");
+    }
 
     if(argc == 3){
         readwritebufsiz(size, argc, argv);

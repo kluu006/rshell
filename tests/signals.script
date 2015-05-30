@@ -1,0 +1,266 @@
+Script started on Fri 29 May 2015 09:59:26 PM PDT
+~
+kluu006@hammer $ cs100
+[0;91m
+===============================================================================
+|                                                                             |
+| You have enabled settings specific for cs100.  Everything you do is being   |
+| recorded to measure your progress in the class.                             |
+|                                                                             |
+| Important commands for the class:                                           |
+|   * calcgrade.sh          displays a detailed breakdown of your grade       |
+|   * checksyscalls.sh      is your cpp file doing proper error checking?     |
+|   * typespeed             practice typing unix commands                     |
+|                                                                             |
+| Important commands for general C++ programming:                             |
+|   * make                  don't call g++ manually; let make do the work!    |
+|   * gdb                   the GNU debugger                                  |
+|   * valgrind              get rid of your memory leaks                      |
+|   * cppcheck              static analysis tool                              |
+|   * man                   find help about any syscall / terminal command    |
+|                                                                             |
+===============================================================================
+[0m
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~[0;95m [0;36m$[0m cd Desktop
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop[0;95m [0;36m$[0m ls
+assignment0  cs100_stuff  kenta  sig  test  testr  water
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop[0;95m [0;36m$[0m cd sig
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/sig[0;95m (master) [0;36m$[0m cd rshell
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/sig/rshell[0;95m (signals) [0;36m$[0m ls
+LICENSE  Makefile  README.md  src  tests
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/sig/rshell[0;95m (signals) [0;36m$[0m make
+mkdir -p ./bin
+g++ -std=c++0x -pedantic -Wall -Werror ./src/main.cpp -o ./bin/rshell
+g++ -std=c++0x -pedantic -Wall -Werror ./src/ls.cpp -o ./bin/ls
+g++  ./src/cp.cpp -o ./bin/cp
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/sig/rshell[0;95m (signals) [0;36m$[0m bin/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #hi
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd    cd -
+/home/csmajs/kluu006/Desktop/sig
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$               cd      -
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$          cd             -   -
+/home/csmajs/kluu006/Desktop/sig
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ #cd only tg akes in the 1 first parameter
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ cd-
+execvp: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ #there needs to be a space
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #notice how home directory is replaced with ~
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd ../..
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd -                 cd     -
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$              cd         ../..
+kluu006@hammer.cs.ucr.edu:~/Desktop$    cd     .           ..
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd  ls
+assignment0  cs100_stuff  kenta  sig  test  testr  water
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd               cd          nont _exisint direc          sting_dir     sig
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop$      cd   -
+/home/csmajs/kluu006/Desktop
+kluu006@hammer.cs.ucr.edu:~/Desktop$ #old pw   pwd was set to the same directory because of cd .
+kluu006@hammer.cs.ucr.edu:~/Desktop$     cd    ..
+kluu006@hammer.cs.ucr.edu:~$          cd    ..
+kluu006@hammer.cs.ucr.edu:/home/csmajs$        cd ..    ..
+kluu006@hammer.cs.ucr.edu:/home$     #when not hi  in home directory, does not show ^[[Z~     ~
+kluu006@hammer.cs.ucr.edu:/home$ cd         cd ~       ~
+kluu006@hammer.cs.ucr.edu:~$ cd ~
+kluu006@hammer.cs.ucr.edu:~$ cd     Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #back  
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ # cd /home/kenny
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #woops
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd /home/csmajs/kl   
+kluu006@hammer.cs.ucr.edu:/home/csmajs$ #     #absolutely   pathing
+kluu006@hammer.cs.ucr.edu:/home/csmajs$          cd       /etc
+kluu006@hammer.cs.ucr.edu:/etc$ cd          cd   -
+/home/csmajs
+kluu006@hammer.cs.ucr.edu:/home/csmajs$     cd     -
+/etc
+kluu006@hammer.cs.ucr.edu:/etc$        cd   /
+kluu006@hammer.cs.ucr.edu:/$ #root directory
+kluu006@hammer.cs.ucr.edu:/$ cd /home               cd     /home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$  cd -     -
+/
+kluu006@hammer.cs.ucr.edu:/$ cd  -
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$       cd ..
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ cd ..
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd -
+/home/csmajs/kluu006/Desktop/sig
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ cd -
+/home/csmajs/kluu006/Desktop
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd -
+/home/csmajs/kluu006/Desktop/sig
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ ls
+rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ cd rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ls
+bin  LICENSE  Makefile	README.md  src	tests
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$  l        ls      -a
+.  ..  bin  .git  LICENSE  Makefile  README.md	src  tests
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$  c   cd        .git
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/.git$        ls
+branches  config  description  FETCH_HEAD  HEAD  hooks	index  info  logs  objects  ORIG_HEAD  packed-refs  refs
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/.git$ cd ..
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #went into hidden directory besides . and , ..
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ls
+bin  LICENSE  Makefile	README.md  src	tests
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd src e tests               src   tests
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ #does first one only
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$      cd  -  tests
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd
+kluu006@hammer.cs.ucr.edu:~$ #cd by itself
+kluu006@hammer.cs.ucr.edu:~$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$          cd    ../rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd   blah     ..
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ @ #here is ctrl c
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cat
+^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ grep
+Usage: grep [OPTION]... PATTERN [FILE]...
+Try `grep --help' for more information.
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ grep a
+^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ tail
+^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ bin/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ps
+  PID TTY          TIME CMD
+26742 pts/10   00:00:00 bash
+26873 pts/10   00:00:00 rshell
+30071 pts/10   00:00:00 rshell
+30073 pts/10   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #i will do ctrl c to exit into first rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ps
+  PID TTY          TIME CMD
+26742 pts/10   00:00:00 bash
+26873 pts/10   00:00:00 rshell
+30139 pts/10   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #doesnt end my first rshell though, which is good
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$               cat
+                        ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^[[A    cat
+sadsa
+sadsa
+asdads
+asdads
+^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$             ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$         ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ps
+  PID TTY          TIME CMD
+26742 pts/10   00:00:00 bash
+26873 pts/10   00:00:00 rshell
+30552 pts/10   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ls
+bin  LICENSE  Makefile	README.md  src	tests
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ pwd^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ 
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ 
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ 
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ pwd              ls^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #whut ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd ..
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig$ cd ..
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd sg/rshell        ig/rshell/src
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd ..
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cat
+^Z
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ fg
+^Z
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ps
+  PID TTY          TIME CMD
+26742 pts/10   00:00:00 bash
+26873 pts/10   00:00:00 rshell
+34038 pts/10   00:00:00 cat
+34065 pts/10   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ fg
+^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ps
+  PID TTY          TIME CMD
+26742 pts/10   00:00:00 bash
+26873 pts/10   00:00:00 rshell
+34098 pts/10   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #only fg works
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell/src
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd ~
+kluu006@hammer.cs.ucr.edu:~$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell/src
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd .
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd .
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell/src
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell/src
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ cd -
+/home/csmajs/kluu006/Desktop/sig/rshell/src
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ ls
+cp.cpp	ls.cpp	main.cpp  mv.cpp  rm.cpp  Timer.h
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell/src$ #bye    cd ~
+kluu006@hammer.cs.ucr.edu:~$ ls
+C:\nppdf32Log\debuglog.txt  Documents  ex3.asm		      kluu006.tar.gz  lab4	  Music      Templates
+cs100_stuff		    Downloads  ex4.asm		      lab2.cpp	      lab5.1.asm  Pictures   Videos
+data.txt		    ex1.asm    Firefox_wallpaper.png  lab2.tgz	      lab5.2.asm  Public
+Desktop			    ex2.asm    get		      lab3	      lab8	  README.md
+kluu006@hammer.cs.ucr.edu:~$ cd Desktop
+kluu006@hammer.cs.ucr.edu:~/Desktop$ ls
+assignment0  cs100_stuff  kenta  sig  test  testr  water
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cd water
+kluu006@hammer.cs.ucr.edu:~/Desktop/water$ ls
+rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/water$ cd rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/water/rshell$ cd ~/Desktop/ 
+kluu006@hammer.cs.ucr.edu:~/Desktop$     cd             /home
+kluu006@hammer.cs.ucr.edu:/home$       cd   -
+/home/csmajs/kluu006/Desktop
+kluu006@hammer.cs.ucr.edu:~/Desktop$     cd     sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd-wasd
+execvp: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ asdas     cd -asdas
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd -src
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd - src
+/home/csmajs/kluu006/Desktop
+kluu006@hammer.cs.ucr.edu:~/Desktop$ cdd     -
+/home/csmajs/kluu006/Desktop/sig/rshell
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd          asdsadas
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$        cd           asdsa  -
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ cd        asdas asdasd asdasdas dasdsa asdsad    -       asdas   -
+Chdir: No such file or directory
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ #bye
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ exit    ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ^C
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ ps
+  PID TTY          TIME CMD
+26742 pts/10   00:00:00 bash
+26873 pts/10   00:00:00 rshell
+35294 pts/10   00:00:00 ps
+kluu006@hammer.cs.ucr.edu:~/Desktop/sig/rshell$ exit
+[s%%%%%%%%%%[u[0;32mkluu006[0;36m@[0;32mcs100[0;36m:[0;32m~/Desktop/sig/rshell[0;95m (signals) [0;36m$[0m exit
+exit
+~
+kluu006@hammer $ exit
+exit
+
+Script done on Fri 29 May 2015 10:23:20 PM PDT
